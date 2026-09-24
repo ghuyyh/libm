@@ -1,0 +1,1 @@
+Java JDK version: 25.0.3

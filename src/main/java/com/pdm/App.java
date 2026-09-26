@@ -12,11 +12,11 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        // Points to the new view folder structure
+        //get home view
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("view/HomeView.fxml"));
         Parent root = fxmlLoader.load();
         
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root);
         stage.setTitle("Library Management");
         stage.setScene(scene);
         stage.show();

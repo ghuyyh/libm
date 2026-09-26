@@ -18,7 +18,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" style="-fx-background-color: #f7f7f7;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane fx:id="mainpane" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" style="-fx-background-color: #f7f7f7;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pdm.controller.Home">
    <top>
       <AnchorPane prefHeight="0.0" prefWidth="709.0" style="-fx-background-color: #ffffff;" BorderPane.alignment="CENTER">
          <children>
@@ -28,12 +28,12 @@
                   <Pane prefHeight="46.0" prefWidth="23.0" />
                   <MenuButton mnemonicParsing="false" prefHeight="27.0" prefWidth="49.0" styleClass="round-button" text="☰" textAlignment="CENTER">
                     <items>
-                      <MenuItem fx:id="book" mnemonicParsing="false" text="Book Catalog" />
-                      <MenuItem fx:id="members" mnemonicParsing="false" text="Members Manage" />
-                        <MenuItem fx:id="loans" mnemonicParsing="false" text="Loans Manage" />
-                        <MenuItem fx:id="reservations" mnemonicParsing="false" text="Reservations" />
-                        <MenuItem fx:id="fines" mnemonicParsing="false" text="Fines" />
-                        <MenuItem fx:id="report" mnemonicParsing="false" text="Report" />
+                      <MenuItem fx:id="book" mnemonicParsing="false" onAction="#bookClick" text="Book Catalog" />
+                      <MenuItem fx:id="members" mnemonicParsing="false" onAction="#memClick" text="Members Manage" />
+                        <MenuItem fx:id="loans" mnemonicParsing="false" onAction="#loanClick" text="Loans Manage" />
+                        <MenuItem fx:id="reservations" mnemonicParsing="false" onAction="#reserClick" text="Reservations" />
+                        <MenuItem fx:id="fines" mnemonicParsing="false" onAction="#fineClick" text="Fines" />
+                        <MenuItem fx:id="report" mnemonicParsing="false" onAction="#reportClick" text="Report" />
                     </items>
                   </MenuButton>
                   <Pane prefHeight="46.0" prefWidth="0.0" HBox.hgrow="ALWAYS" />
@@ -47,7 +47,7 @@
                         <Insets />
                      </HBox.margin>
                   </Pane>
-                  <Button fx:id="search" mnemonicParsing="false" prefHeight="25.0" prefWidth="51.0" styleClass="round-button" text="🔎" />
+                  <Button fx:id="search" mnemonicParsing="false" onAction="#searchClick" prefHeight="25.0" prefWidth="51.0" styleClass="round-button" text="🔎" />
                </children>
             </HBox>
          </children>
@@ -74,32 +74,32 @@
                   <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 10;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 10;" GridPane.rowIndex="2" />
                   <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 10;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <Button alignment="CENTER" mnemonicParsing="false" styleClass="round-button" text="    ➜    " GridPane.halignment="RIGHT" GridPane.valignment="BOTTOM">
+                  <Button alignment="CENTER" mnemonicParsing="false" onAction="#bookClick" styleClass="round-button" text="    ➜    " GridPane.halignment="RIGHT" GridPane.valignment="BOTTOM">
                      <GridPane.margin>
                         <Insets bottom="20.0" right="20.0" />
                      </GridPane.margin>
                   </Button>
-                  <Button mnemonicParsing="false" styleClass="round-button" text="    ➜    " GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="BOTTOM">
+                  <Button mnemonicParsing="false" onAction="#memClick" styleClass="round-button" text="    ➜    " GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="BOTTOM">
                      <GridPane.margin>
                         <Insets bottom="20.0" right="20.0" />
                      </GridPane.margin>
                   </Button>
-                  <Button mnemonicParsing="false" styleClass="round-button" text="    ➜    " GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="BOTTOM">
+                  <Button mnemonicParsing="false" onAction="#loanClick" styleClass="round-button" text="    ➜    " GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="BOTTOM">
                      <GridPane.margin>
                         <Insets bottom="20.0" right="20.0" />
                      </GridPane.margin>
                   </Button>
-                  <Button mnemonicParsing="false" styleClass="round-button" text="    ➜    " GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="BOTTOM">
+                  <Button mnemonicParsing="false" onAction="#reserClick" styleClass="round-button" text="    ➜    " GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="BOTTOM">
                      <GridPane.margin>
                         <Insets bottom="20.0" right="20.0" />
                      </GridPane.margin>
                   </Button>
-                  <Button mnemonicParsing="false" styleClass="round-button" text="    ➜    " GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="BOTTOM">
+                  <Button mnemonicParsing="false" onAction="#fineClick" styleClass="round-button" text="    ➜    " GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="BOTTOM">
                      <GridPane.margin>
                         <Insets bottom="20.0" right="20.0" />
                      </GridPane.margin>
                   </Button>
-                  <Button mnemonicParsing="false" styleClass="round-button" text="    ➜    " GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="BOTTOM">
+                  <Button mnemonicParsing="false" onAction="#reportClick" styleClass="round-button" text="    ➜    " GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="BOTTOM">
                      <GridPane.margin>
                         <Insets bottom="20.0" right="20.0" />
                      </GridPane.margin>

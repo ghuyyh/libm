@@ -18,12 +18,12 @@
                   <Pane prefHeight="46.0" prefWidth="23.0" />
                   <MenuButton mnemonicParsing="false" prefHeight="27.0" prefWidth="49.0" styleClass="round-button" text="☰" textAlignment="CENTER">
                      <items>
-                        <MenuItem fx:id="book" mnemonicParsing="false" text="Book Catalog" />
-                        <MenuItem fx:id="members" mnemonicParsing="false" text="Members Manage" />
-                        <MenuItem fx:id="loans" mnemonicParsing="false" text="Loans Manage" />
-                        <MenuItem fx:id="reservations" mnemonicParsing="false" text="Reservations" />
-                        <MenuItem fx:id="fines" mnemonicParsing="false" text="Fines" />
-                        <MenuItem fx:id="report" mnemonicParsing="false" text="Report" />
+                        <MenuItem fx:id="book" mnemonicParsing="false" onAction="#bookClick" text="Book Catalog" />
+                        <MenuItem fx:id="members" mnemonicParsing="false" onAction="#memClick" text="Members Manage" />
+                        <MenuItem fx:id="loans" mnemonicParsing="false" onAction="#loanClick" text="Loans Manage" />
+                        <MenuItem fx:id="reservations" mnemonicParsing="false" onAction="#reserClick" text="Reservations" />
+                        <MenuItem fx:id="fines" mnemonicParsing="false" onAction="#fineClick" text="Fines" />
+                        <MenuItem fx:id="report" mnemonicParsing="false" onAction="#reportClick" text="Report" />
                      </items>
                   </MenuButton>
                   <Pane prefHeight="46.0" prefWidth="0.0" HBox.hgrow="ALWAYS" />

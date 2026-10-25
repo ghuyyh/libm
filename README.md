@@ -42,8 +42,16 @@ git config --global user.email "your.email@example.com"
 5. To get latest changes from teammates, click the three dot "..." near the repository title "libm" in Source control tab then pull.
 
 
-## 3. Scene builder (for students)
+## 3. Scene builder (for members)
 
 - Download: <https://gluonhq.com/products/scene-builder/>
 - Configuration: On taskbar, click `Preview` -> `Theme` -> `Modena(FX8)`
 - For choosing UI component: avoid using **Gluon** components - the component in **blue color**.
+
+## 4. Configuration (for members)
+- Remember to change the Project Java Runtime - see step 2 of **Build and run (for marker)**
+- Goto `.vscode\setting.json`and change **java.configuration.updateBuildConfiguration** to **automatic**
+
+```
+"java.configuration.updateBuildConfiguration": "automatic" 
+```

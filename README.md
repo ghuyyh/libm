@@ -1,12 +1,16 @@
 
-# Final Project for OOP
+# PDM Library Management Project
 
 Please use **Java JDK version: 25.0.3 or above**.
 ## 1. Build and run (for marker)
-- ...
-- ...
+1. Edit `db.properties` at the project root to configure database settings:
+    + `db.url`: JDBC connection URL
+    + `db.user`: Database username
+    + `db.password`: Database user password
+2. If using VSCode, press `Ctrl` + `Shift` + `P` then find and choose `Java: Configure Java Runtime` -> choose **JavaSE 25** or above then `Apply Settings`
+3. ...
 
-## 2. Git and GitHub contribution tutorial (for students)
+## 2. Git and GitHub contribution tutorial (for members)
 
 - Install Git: <https://git-scm.com/>
 - In VS Code, sign in to GitHub.
@@ -16,7 +20,7 @@ Please use **Java JDK version: 25.0.3 or above**.
 - Next time you code, open the folder `libm` in this folder in VS Code.
 - Git quick cmd guide: <https://github.com/git-guides>, or use GUI tutorial below
 
-### Git Configuration - for contribution to record
+### Git Configuration - for contribution to be record
 
 Before You use git, enter command in terminal(replace with your github username and github email-> go github settings and find your unique GitHub no-reply address it looks like ID+username@users.noreply.github.com):
 

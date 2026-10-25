@@ -2,6 +2,7 @@ module com.pdm {
     requires transitive javafx.controls;
     requires transitive javafx.graphics;
     requires javafx.fxml;
+    requires java.sql;
 
     // Grants JavaFX access to your main application class
     opens com.pdm to javafx.fxml;

@@ -1,7 +1,9 @@
 package com.pdm.controller;
 
+import com.pdm.dao.AuthorDAO;
 import com.pdm.dao.BookCopyDAO;
 import com.pdm.dao.BookTitleDAO;
+import com.pdm.model.Author;
 import com.pdm.model.BookCopy;
 import com.pdm.model.BookTitle;
 
@@ -37,10 +39,22 @@ public class TitleCopyManage extends basecontrol {
     @FXML
     private TableColumn<BookCopy, String> col_note;
 
+    // author
+    @FXML
+    private TableView<Author> auth_table;
+    @FXML
+    private TableColumn<Author, String> col_authid;
+    @FXML
+    private TableColumn<Author, String> col_authname;
+    @FXML
+    private TableColumn<Author, String> col_bio;
+
     private BookTitleDAO bookTitleDAO = new BookTitleDAO();
     private ObservableList<BookTitle> bookList = FXCollections.observableArrayList();
     private BookCopyDAO bookCopyDAO = new BookCopyDAO();
     private ObservableList<BookCopy> copyList = FXCollections.observableArrayList();
+    private AuthorDAO authorDAO = new AuthorDAO();
+    private ObservableList<Author> authList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -54,9 +68,14 @@ public class TitleCopyManage extends basecontrol {
         col_shelf.setCellValueFactory(new PropertyValueFactory<>("Shelf_Location"));
         col_status.setCellValueFactory(new PropertyValueFactory<>("Status"));
         col_note.setCellValueFactory(new PropertyValueFactory<>("note"));
+        // author
+        col_authid.setCellValueFactory(new PropertyValueFactory<>("Author_ID"));
+        col_authname.setCellValueFactory(new PropertyValueFactory<>("Author_Name"));
+        col_bio.setCellValueFactory(new PropertyValueFactory<>("Biography"));
 
         book_table.setItems(bookList);
         copy_table.setItems(copyList);
+        auth_table.setItems(authList);
         refreshBookTable();
 
         book_table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -69,6 +88,15 @@ public class TitleCopyManage extends basecontrol {
             }
         });
 
+        book_table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                // load author
+                String selected_bookid = newSelection.getBookID();
+                authList.setAll(authorDAO.get_book_auth(selected_bookid));
+            } else {
+                authList.clear();
+            }
+        });
     }
 
     private void refreshBookTable() {
@@ -77,6 +105,9 @@ public class TitleCopyManage extends basecontrol {
 
     private void refreshCopyTable() {
         copyList.setAll(bookCopyDAO.get_copy(""));
+    }
 
+    private void refreshAuthorTable() {
+        authList.setAll(authorDAO.get_book_auth(""));
     }
 }

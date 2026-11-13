@@ -11,14 +11,14 @@ import com.pdm.connect.dbconnect;
 import com.pdm.model.BookCopy;
 
 public class BookCopyDAO {
-    public List<BookCopy> get_copy(String cp_id) {
+    public List<BookCopy> get_copy(String book_id) {
         String listcopy_q = " SELECT Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes FROM Book_Copy WHERE Book_ID = ?";
         List<BookCopy> list = new ArrayList<>();
         try (
                 Connection conn = dbconnect.getConnection();
                 PreparedStatement ps = conn.prepareStatement(listcopy_q);
             ) {
-            ps.setString(1, cp_id);
+            ps.setString(1, book_id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     BookCopy copy = new BookCopy(

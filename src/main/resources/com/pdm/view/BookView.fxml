@@ -4,7 +4,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -56,37 +55,33 @@
         <tabs>
           <Tab text="Authors">
                <content>
-                  <ScrollPane fitToHeight="true" fitToWidth="true">
-                     <content>
-                        <TableView prefHeight="200.0" prefWidth="200.0">
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="auth_table" prefHeight="200.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columns>
-                            <TableColumn prefWidth="75.0" text="Author ID" />
-                            <TableColumn prefWidth="75.0" text="Name" />
-                              <TableColumn prefWidth="75.0" text="Biography" />
+                            <TableColumn fx:id="col_authid" prefWidth="75.0" text="Author ID" />
+                            <TableColumn fx:id="col_authname" prefWidth="348.0" text="Name" />
+                              <TableColumn fx:id="col_bio" prefWidth="365.0" text="Biography" />
                           </columns>
                         </TableView>
-                     </content>
-                  </ScrollPane>
+                     </children>
+                  </AnchorPane>
                </content></Tab>
           <Tab text="Copies">
                <content>
-                  <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
-                     <content>
-                        <TableView fx:id="copy_table" prefHeight="172.0">
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="copy_table" prefHeight="172.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columns>
                             <TableColumn fx:id="col_copyid" prefWidth="75.0" text="Copy ID" />
                             <TableColumn fx:id="col_shelf" prefWidth="218.0" text="Shelf location" />
                               <TableColumn fx:id="col_status" prefWidth="130.0" text="Status" />
                               <TableColumn fx:id="col_note" prefWidth="265.0" text="notes" />
-                              <TableColumn prefWidth="135.0">
-                                 <graphic>
-                                    <Button alignment="BOTTOM_RIGHT" mnemonicParsing="false" text="add copy +" />
-                                 </graphic>
-                              </TableColumn>
                           </columns>
                         </TableView>
-                     </content>
-                  </ScrollPane>
+                        <Button alignment="BOTTOM_RIGHT" mnemonicParsing="false" text="add copy +" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
                </content>
           </Tab>
         </tabs>

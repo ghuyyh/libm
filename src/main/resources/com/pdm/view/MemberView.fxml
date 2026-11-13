@@ -58,14 +58,14 @@
    <center>
       <StackPane prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
-            <TableView prefHeight="200.0" prefWidth="200.0">
+            <TableView fx:id="mem_table" prefHeight="200.0" prefWidth="200.0">
               <columns>
-                <TableColumn prefWidth="75.0" text="ID" />
-                <TableColumn prefWidth="352.0" text="Full Name" />
-                  <TableColumn prefWidth="81.0" text="Category" />
-                  <TableColumn prefWidth="85.0" text="Borrow limit" />
-                  <TableColumn prefWidth="128.0" text="Loan period(days)" />
-                  <TableColumn minWidth="0.0" prefWidth="91.0" text="Active loans" />
+                <TableColumn fx:id="col_memid" prefWidth="75.0" text="ID" />
+                <TableColumn fx:id="col_name" prefWidth="352.0" text="Full Name" />
+                  <TableColumn fx:id="col_cat" prefWidth="81.0" text="Category" />
+                  <TableColumn fx:id="col_lim" prefWidth="85.0" text="Borrow limit" />
+                  <TableColumn fx:id="col_period" prefWidth="128.0" text="Loan period(days)" />
+                  <TableColumn fx:id="col_countloan" minWidth="0.0" prefWidth="91.0" text="Active loans" />
               </columns>
             </TableView>
             <Button mnemonicParsing="false" text="Add menber+" StackPane.alignment="BOTTOM_RIGHT" />

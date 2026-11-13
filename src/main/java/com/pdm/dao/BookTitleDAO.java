@@ -37,4 +37,9 @@ public class BookTitleDAO {
         return list;
     }
 
+    public boolean addBook(BookTitle book) {
+        //insert into Book (...) 
+        return false;
+    }
+
 }

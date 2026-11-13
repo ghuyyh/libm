@@ -79,7 +79,7 @@
                               <TableColumn fx:id="col_note" prefWidth="265.0" text="notes" />
                           </columns>
                         </TableView>
-                        <Button alignment="BOTTOM_RIGHT" mnemonicParsing="false" text="add copy +" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                        <Button fx:id="add_copy_btn" alignment="BOTTOM_RIGHT" mnemonicParsing="false" text="add copy +" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                      </children>
                   </AnchorPane>
                </content>
@@ -98,7 +98,7 @@
                   <TableColumn fx:id="col_publisher" prefWidth="124.0" text="Publisher" />
               </columns>
             </TableView>
-            <Button maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Add book +" StackPane.alignment="BOTTOM_RIGHT">
+            <Button fx:id="add_book_btn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#addBook" text="Add book +" StackPane.alignment="BOTTOM_RIGHT">
                <StackPane.margin>
                   <Insets />
                </StackPane.margin>

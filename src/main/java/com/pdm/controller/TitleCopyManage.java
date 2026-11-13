@@ -97,6 +97,7 @@ public class TitleCopyManage extends basecontrol {
                 authList.clear();
             }
         });
+
     }
 
     private void refreshBookTable() {
@@ -109,5 +110,10 @@ public class TitleCopyManage extends basecontrol {
 
     private void refreshAuthorTable() {
         authList.setAll(authorDAO.get_book_auth(""));
+    }
+
+    @FXML
+    private void addBook() {
+
     }
 }

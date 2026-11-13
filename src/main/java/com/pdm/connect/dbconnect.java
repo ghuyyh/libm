@@ -38,7 +38,14 @@ public class dbconnect {
         }
         return connection;
     }
-
+        public static boolean testConnection() {
+        try (Connection conn = getConnection()) {
+            return conn.isValid(5);
+        } catch (SQLException e) {
+            System.err.println("Database connection failed: " + e.getMessage());
+            return false;
+        }
+    }
     public static void closeConnection() {
         if (connection != null) {
             try {

@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -28,7 +29,10 @@ public class MemberManage extends basecontrol {
     @FXML
     private TableColumn<Member, Integer> col_period;
 
-        private MemberDAO memberDAO = new MemberDAO();
+    @FXML
+    private Label mem_count;
+
+    private MemberDAO memberDAO = new MemberDAO();
     private ObservableList<Member> memList = FXCollections.observableArrayList();
 
     @FXML
@@ -45,6 +49,7 @@ public class MemberManage extends basecontrol {
         mem_table.setItems(memList);
 
         refreshMemTable();
+        mem_count.setText(memList.size() + " Members");
 
     }
 

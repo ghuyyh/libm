@@ -9,6 +9,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
@@ -49,7 +50,7 @@
                         <Insets />
                      </HBox.margin>
                   </Pane>
-                  <Button fx:id="search" mnemonicParsing="false" onAction="#searchClick" prefHeight="25.0" prefWidth="51.0" styleClass="round-button" text="🔎" />
+                  <TextField fx:id="search_field" onAction="#search" promptText="Enter to search" />
                </children>
             </HBox>
          </children>
@@ -60,12 +61,12 @@
          <children>
             <TableView prefHeight="200.0" prefWidth="200.0">
               <columns>
-                <TableColumn prefWidth="81.0" text="Loan ID" />
-                <TableColumn prefWidth="237.0" text="Member Name" />
-                  <TableColumn prefWidth="228.0" text="Title" />
-                  <TableColumn minWidth="0.0" prefWidth="97.0" text="Copy ID" />
-                  <TableColumn prefWidth="148.0" text="DateDue" />
-                  <TableColumn prefWidth="75.0" text="Status" />
+                <TableColumn fx:id="col_loanid" prefWidth="81.0" text="Loan ID" />
+                <TableColumn fx:id="col_memname" prefWidth="237.0" text="Member Name" />
+                  <TableColumn fx:id="col_title" prefWidth="228.0" text="Title" />
+                  <TableColumn fx:id="col_copyid" minWidth="0.0" prefWidth="97.0" text="Copy ID" />
+                  <TableColumn fx:id="col_datedue" prefWidth="148.0" text="DateDue" />
+                  <TableColumn fx:id="col_status" prefWidth="75.0" text="Status" />
               </columns>
             </TableView>
             <CheckBox mnemonicParsing="false" text="Show overdue today" StackPane.alignment="BOTTOM_RIGHT" />

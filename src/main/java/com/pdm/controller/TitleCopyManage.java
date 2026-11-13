@@ -10,6 +10,7 @@ import com.pdm.model.BookTitle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -49,6 +50,9 @@ public class TitleCopyManage extends basecontrol {
     @FXML
     private TableColumn<Author, String> col_bio;
 
+    @FXML
+    private Label title_count;
+
     private BookTitleDAO bookTitleDAO = new BookTitleDAO();
     private ObservableList<BookTitle> bookList = FXCollections.observableArrayList();
     private BookCopyDAO bookCopyDAO = new BookCopyDAO();
@@ -76,7 +80,9 @@ public class TitleCopyManage extends basecontrol {
         book_table.setItems(bookList);
         copy_table.setItems(copyList);
         auth_table.setItems(authList);
+
         refreshBookTable();
+        title_count.setText(bookList.size() + " Titles");
 
         book_table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {

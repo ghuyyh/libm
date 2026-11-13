@@ -49,7 +49,7 @@
                         <Insets />
                      </HBox.margin>
                   </Pane>
-                  <Button fx:id="search" mnemonicParsing="false" onAction="#searchClick" prefHeight="25.0" prefWidth="51.0" styleClass="round-button" text="🔎" />
+                  <TextField fx:id="search_field" onAction="#search" promptText="Enter to search" />
                </children>
             </HBox>
          </children>
@@ -61,13 +61,17 @@
             <TableView fx:id="mem_table" prefHeight="200.0" prefWidth="200.0">
               <columns>
                 <TableColumn fx:id="col_memid" prefWidth="75.0" text="ID" />
-                <TableColumn fx:id="col_name" prefWidth="352.0" text="Full Name" />
-                  <TableColumn fx:id="col_cat" prefWidth="81.0" text="Category" />
-                  <TableColumn fx:id="col_lim" prefWidth="85.0" text="Borrow limit" />
-                  <TableColumn fx:id="col_period" prefWidth="128.0" text="Loan period(days)" />
-                  <TableColumn fx:id="col_countloan" minWidth="0.0" prefWidth="91.0" text="Active loans" />
+                <TableColumn fx:id="col_name" prefWidth="296.0" text="Full Name" />
+                  <TableColumn fx:id="col_cat" prefWidth="158.0" text="Category" />
+                  <TableColumn fx:id="col_lim" prefWidth="106.0" text="Borrow limit" />
+                  <TableColumn fx:id="col_period" prefWidth="121.0" text="Loan period(days)" />
               </columns>
             </TableView>
+            <Label fx:id="mem_count" text="0 Members" StackPane.alignment="TOP_RIGHT">
+               <StackPane.margin>
+                  <Insets right="5.0" top="5.0" />
+               </StackPane.margin>
+            </Label>
             <Button mnemonicParsing="false" text="Add menber+" StackPane.alignment="BOTTOM_RIGHT" />
          </children>
       </StackPane>

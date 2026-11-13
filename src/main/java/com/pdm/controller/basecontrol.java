@@ -150,22 +150,5 @@ public class basecontrol {
     }
 
     @FXML
-    public void searchClick(ActionEvent event) {
-        try {
-
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/pdm/view/SearchView.fxml"));
-            Parent root = fxmlLoader.load();
-
-            // Stage stage = (Stage) mainpane.getScene().getWindow();
-            Stage stage = new Stage();
-            Scene scene = new Scene(root);
-            stage.setTitle("Search Management");
-            stage.setScene(scene);
-            stage.show();
-            System.out.println("search ok");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
+    public void search(){}
 }

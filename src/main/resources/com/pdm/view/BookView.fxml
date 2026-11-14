@@ -63,11 +63,11 @@
                <content>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0">
                      <children>
-                        <TableView fx:id="auth_table" prefHeight="200.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <TableView fx:id="auth_table" prefHeight="200.0" prefWidth="512.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columns>
                             <TableColumn fx:id="col_authid" prefWidth="75.0" text="Author ID" />
-                            <TableColumn fx:id="col_authname" prefWidth="348.0" text="Name" />
-                              <TableColumn fx:id="col_bio" prefWidth="365.0" text="Biography" />
+                            <TableColumn fx:id="col_authname" prefWidth="190.0" text="Name" />
+                              <TableColumn fx:id="col_bio" prefWidth="246.0" text="Biography" />
                           </columns>
                         </TableView>
                      </children>
@@ -132,6 +132,49 @@
                      </children>
                   </AnchorPane>
               </content>
+            </Tab>
+            <Tab text="Edit Selected Title">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Button fx:id="add_book_btn1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#addBook" text="Save" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                        <GridPane prefHeight="120.0" prefWidth="311.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="151.0" minWidth="10.0" prefWidth="102.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="209.0" minWidth="10.0" prefWidth="209.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <Label text="ISBN:" />
+                              <Label text="Title:" GridPane.rowIndex="1" />
+                              <Label text="Publish year:" GridPane.rowIndex="2" />
+                              <Label text="Publisher:" GridPane.rowIndex="3" />
+                              <Label text="Choose author" GridPane.rowIndex="4" />
+                              <TextField GridPane.columnIndex="1" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <ComboBox editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                           </children>
+                        </GridPane>
+                        <TableView prefHeight="171.0" prefWidth="253.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="420.0" AnchorPane.topAnchor="0.0">
+                           <columns>
+                              <TableColumn prefWidth="96.0" text="ID" />
+                              <TableColumn prefWidth="156.0" text="Name" />
+                           </columns>
+                        </TableView>
+                        <Label layoutX="352.0" layoutY="6.0" text="Authors list:" AnchorPane.topAnchor="6.0" />
+                        <Button disable="true" layoutX="673.0" layoutY="142.0" mnemonicParsing="false" text="Remove" />
+                        <Button layoutX="321.0" layoutY="142.0" mnemonicParsing="false" text="Add to list -&gt;" />
+                     </children>
+                  </AnchorPane>
+               </content>
             </Tab>
         </tabs>
       </TabPane>

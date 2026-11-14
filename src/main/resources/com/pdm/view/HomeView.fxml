@@ -132,12 +132,12 @@
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font></Text>
-                  <Label layoutX="40.0" layoutY="84.0" text="this is abc def an comvoi ca .... to manage ... noi chung la description ..." wrapText="true" GridPane.halignment="CENTER" />
-                  <Label text="this is abc def an comvoi ca .... to manage ... noi chung la description ..." wrapText="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
-                  <Label layoutX="40.0" layoutY="84.0" text="this is abc def an comvoi ca .... to manage ... noi chung la description ..." wrapText="true" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                  <Label layoutX="40.0" layoutY="84.0" text="this is abc def an comvoi ca .... to manage ... noi chung la description ..." wrapText="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                  <Label layoutX="40.0" layoutY="84.0" text="this is abc def an comvoi ca .... to manage ... noi chung la description ..." wrapText="true" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
-                  <Label layoutX="40.0" layoutY="84.0" text="this is abc def an comvoi ca .... to manage ... noi chung la description ..." wrapText="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
+                  <Label layoutX="40.0" layoutY="84.0" text="LIST &amp; MANAGE ALL THE BOOK TITLES AND ITS COPIES" wrapText="true" GridPane.halignment="CENTER" />
+                  <Label text="LIST &amp; MANAGE MEMBERS OF THE LIBRARY" wrapText="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+                  <Label layoutX="40.0" layoutY="84.0" text="LIST &amp; MANAGE MEMBERS LOANS" wrapText="true" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+                  <Label layoutX="40.0" layoutY="84.0" text="LIST &amp; MANAGE ALL BOOK RESERVATIONS" wrapText="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+                  <Label layoutX="40.0" layoutY="84.0" text="LIST &amp; MANANAGE MEMBERS FINES WHO RETURNED LATE" wrapText="true" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
+                  <Label layoutX="40.0" layoutY="84.0" text="VIEW THE REPORT OF LIBRARY ACTIVITY" wrapText="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
                </children>
                <padding>
                   <Insets bottom="30.0" left="30.0" right="30.0" top="10.0" />

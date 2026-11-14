@@ -122,4 +122,9 @@ public class TitleCopyManage extends basecontrol {
     private void addBook() {
 
     }
+
+    @FXML
+    private void deleteBook() {
+
+    }
 }

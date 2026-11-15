@@ -10,9 +10,11 @@ import com.pdm.model.BookTitle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 //manage book
@@ -49,6 +51,16 @@ public class TitleCopyManage extends basecontrol {
     private TableColumn<Author, String> col_authname;
     @FXML
     private TableColumn<Author, String> col_bio;
+
+    // add title
+    @FXML
+    private TextField isbn_field;
+    @FXML 
+    private TextField title_field;
+    @FXML 
+    private TextField year_field;
+    @FXML 
+    private TextField publisherid_field;
 
     @FXML
     private Label title_count;
@@ -104,6 +116,7 @@ public class TitleCopyManage extends basecontrol {
             }
         });
 
+
     }
 
     private void refreshBookTable() {
@@ -120,6 +133,24 @@ public class TitleCopyManage extends basecontrol {
 
     @FXML
     private void addBook() {
+        String isbn = isbn_field.getText();
+        String title = title_field.getText();
+        String publisherID = publisherid_field.getText();
+        int publishyear = Integer.parseInt(year_field.getText());
+
+        boolean success = bookTitleDAO.addBook(isbn, title, publisherID, publishyear);
+        if (success) {
+            refreshBookTable();
+            title_count.setText(bookList.size() + " Titles");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("Book added successfully.");
+            alert.show();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+           
+            alert.setContentText("Failed to add book.");
+            alert.show();
+        }
 
     }
 

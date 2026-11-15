@@ -37,9 +37,47 @@ public class BookTitleDAO {
         return list;
     }
 
-    public boolean addBook(BookTitle book) {
-        // insert into Book (...)
+    public boolean addBook(String isbn, String title, String publisher_ID, int publication_year) {
+        String sql = "INSERT INTO Book (Book_ID, Publisher_ID, ISBN, Title, Publication_Year) VALUES (?, ?, ?, ?, ?);";
+        String bookID = generateBookID();
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setString(1, bookID);
+            ps.setString(2, publisher_ID);
+            ps.setString(3, isbn);
+            ps.setString(4, title);
+            ps.setInt(5, publication_year);
+
+            int row_updated = ps.executeUpdate();
+            return (row_updated > 0);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
         return false;
+    }
+
+    private String generateBookID() {
+        String sql = """
+                SELECT Book_ID
+                FROM Book
+                ORDER BY CAST(SUBSTRING(Book_ID, 2) AS UNSIGNED) DESC
+                LIMIT 1;
+                """;
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();) {
+            if (rs.next()) {
+                String lastBookID = rs.getString("Book_ID");
+                int lastNumber = Integer.parseInt(lastBookID.substring(1));
+                int newNumber = lastNumber + 1;
+                return "B" + newNumber;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 
     public List<BookTitle> get_top10_borrowed_thisyear(String title) {
@@ -59,9 +97,8 @@ public class BookTitleDAO {
         try (
                 Connection conn = dbconnect.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();) {
 
-        ) {
-            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 BookTitle book = new BookTitle(
                         rs.getString("Book_ID"),

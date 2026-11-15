@@ -63,7 +63,7 @@
                <content>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0">
                      <children>
-                        <TableView fx:id="auth_table" prefHeight="200.0" prefWidth="512.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <TableView fx:id="auth_table" prefHeight="200.0" prefWidth="512.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columns>
                             <TableColumn fx:id="col_authid" prefWidth="75.0" text="Author ID" />
                             <TableColumn fx:id="col_authname" prefWidth="190.0" text="Name" />
@@ -77,7 +77,7 @@
                <content>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0">
                      <children>
-                        <TableView fx:id="copy_table" prefHeight="172.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <TableView fx:id="copy_table" prefHeight="172.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columns>
                             <TableColumn fx:id="col_copyid" prefWidth="75.0" text="Copy ID" />
                             <TableColumn fx:id="col_shelf" prefWidth="218.0" text="Shelf location" />
@@ -94,7 +94,27 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Button fx:id="add_book_btn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#addBook" text="Add book +" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                        <GridPane prefHeight="129.0" prefWidth="270.0" AnchorPane.leftAnchor="620.0">
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="130.0" minWidth="10.0" prefWidth="88.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="182.0" minWidth="10.0" prefWidth="182.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label text="Name" />
+                              <Label text="Address" GridPane.rowIndex="1" />
+                              <Label text="Contact email" GridPane.rowIndex="2" />
+                              <TextField GridPane.columnIndex="1" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Button mnemonicParsing="false" text="Add new publisher" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                           </children>
+                        </GridPane>
                         <GridPane prefHeight="120.0" prefWidth="311.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
                           <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" maxWidth="151.0" minWidth="10.0" prefWidth="102.0" />
@@ -111,24 +131,21 @@
                               <Label text="ISBN:" />
                               <Label text="Title:" GridPane.rowIndex="1" />
                               <Label text="Publish year:" GridPane.rowIndex="2" />
-                              <Label text="Publisher:" GridPane.rowIndex="3" />
-                              <Label text="Choose author" GridPane.rowIndex="4" />
-                              <TextField GridPane.columnIndex="1" />
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                              <ComboBox editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                              <Label text="Publisher ID:" GridPane.rowIndex="3" />
+                              <TextField fx:id="isbn_field" GridPane.columnIndex="1" />
+                              <TextField fx:id="title_field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField fx:id="year_field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <TextField fx:id="publisherid_field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <Button fx:id="add_book_btn" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#addBook" text="Add book +" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                            </children>
                         </GridPane>
-                        <TableView prefHeight="171.0" prefWidth="253.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="420.0" AnchorPane.topAnchor="0.0">
+                        <TableView prefHeight="171.0" prefWidth="245.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="350.0" AnchorPane.topAnchor="0.0">
                           <columns>
-                            <TableColumn prefWidth="96.0" text="ID" />
-                            <TableColumn prefWidth="156.0" text="Name" />
+                            <TableColumn prefWidth="90.0" text="Publisher ID" />
+                            <TableColumn prefWidth="154.0" text="Publisher Name" />
                           </columns>
                         </TableView>
-                        <Label layoutX="352.0" layoutY="6.0" text="Authors list:" AnchorPane.topAnchor="6.0" />
-                        <Button disable="true" layoutX="673.0" layoutY="142.0" mnemonicParsing="false" text="Remove" />
-                        <Button layoutX="321.0" layoutY="142.0" mnemonicParsing="false" text="Add to list -&gt;" />
+                        <Label layoutX="252.0" layoutY="152.0" text="All publisher here" />
                      </children>
                   </AnchorPane>
               </content>
@@ -137,7 +154,7 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Button fx:id="add_book_btn1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#addBook" text="Save" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                        <Button maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#addBook" text="Save" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                         <GridPane prefHeight="120.0" prefWidth="311.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
                            <columnConstraints>
                               <ColumnConstraints hgrow="SOMETIMES" maxWidth="151.0" minWidth="10.0" prefWidth="102.0" />
@@ -155,26 +172,68 @@
                               <Label text="Title:" GridPane.rowIndex="1" />
                               <Label text="Publish year:" GridPane.rowIndex="2" />
                               <Label text="Publisher:" GridPane.rowIndex="3" />
-                              <Label text="Choose author" GridPane.rowIndex="4" />
                               <TextField GridPane.columnIndex="1" />
                               <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
                               <TextField GridPane.columnIndex="1" GridPane.rowIndex="2" />
                               <TextField GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                              <ComboBox editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                            </children>
                         </GridPane>
-                        <TableView prefHeight="171.0" prefWidth="253.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="420.0" AnchorPane.topAnchor="0.0">
-                           <columns>
-                              <TableColumn prefWidth="96.0" text="ID" />
-                              <TableColumn prefWidth="156.0" text="Name" />
-                           </columns>
-                        </TableView>
-                        <Label layoutX="352.0" layoutY="6.0" text="Authors list:" AnchorPane.topAnchor="6.0" />
-                        <Button disable="true" layoutX="673.0" layoutY="142.0" mnemonicParsing="false" text="Remove" />
-                        <Button layoutX="321.0" layoutY="142.0" mnemonicParsing="false" text="Add to list -&gt;" />
                      </children>
                   </AnchorPane>
                </content>
+            </Tab>
+            <Tab text="Add New Authors &amp; Assign Book Author">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <GridPane prefHeight="90.0" prefWidth="254.0" AnchorPane.leftAnchor="10.0">
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="122.0" minWidth="10.0" prefWidth="77.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="177.0" minWidth="10.0" prefWidth="177.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label text="Author Name" />
+                              <Label text="Biography" GridPane.rowIndex="1" />
+                              <TextField GridPane.columnIndex="1" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Button mnemonicParsing="false" text="Add+" GridPane.rowIndex="2" />
+                           </children>
+                        </GridPane>
+                        <GridPane prefHeight="90.0" prefWidth="234.0" AnchorPane.leftAnchor="300.0">
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="131.0" minWidth="10.0" prefWidth="103.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="168.0" minWidth="10.0" prefWidth="168.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label text="Enter ISBN" />
+                              <Label text="Enter Author" GridPane.rowIndex="1" />
+                              <TextField GridPane.columnIndex="1" />
+                              <ComboBox editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Button mnemonicParsing="false" text="Add to list -&gt;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                           </children>
+                        </GridPane>
+                        <TableView prefHeight="171.0" prefWidth="251.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="600.0" AnchorPane.topAnchor="0.0">
+                          <columns>
+                            <TableColumn prefWidth="75.0" text="Author ID" />
+                            <TableColumn prefWidth="175.0" text=" Name" />
+                          </columns>
+                        </TableView>
+                        <Button disable="true" layoutX="487.0" layoutY="138.0" mnemonicParsing="false" text="Remove from list" />
+                        <Button disable="true" layoutX="528.0" layoutY="108.0" mnemonicParsing="false" text="Move Up" />
+                        <Button layoutX="851.0" layoutY="145.0" mnemonicParsing="false" text="Save" />
+                     </children>
+                  </AnchorPane>
+              </content>
             </Tab>
         </tabs>
       </TabPane>

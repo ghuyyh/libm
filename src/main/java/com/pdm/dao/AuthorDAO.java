@@ -104,7 +104,8 @@ public class AuthorDAO {
                 );
                 """;
 
-        try (Connection conn = dbconnect.getConnection(); PreparedStatement ps = conn.prepareStatement(sql);) {
+        try (Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
             ps.setString(1, authorID);
             ps.setString(2, "%" + authorName + "%");
             ps.setString(3, authorID);

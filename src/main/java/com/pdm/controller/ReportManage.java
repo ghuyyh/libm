@@ -10,11 +10,11 @@ import com.pdm.model.BookTitle;
 import com.pdm.model.MemCat;
 import com.pdm.model.Member;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
-import javafx.application.Platform;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -72,6 +72,9 @@ public class ReportManage extends basecontrol {
         unpaidFineList.addAll(memberDAO.unpaid_fine_per_mem_cat());
 
         // member who read all book from agiven auhtor
+        // members who read all books from a given author
+        col_memid.setCellValueFactory(new PropertyValueFactory<>("Member_ID"));
+        col_memname.setCellValueFactory(new PropertyValueFactory<>("Full_Name"));
         List<Author> authors = authorDAO.get_all_auth();
         allAuthors = FXCollections.observableArrayList(authors);
         filteredAuthors = new FilteredList<>(allAuthors, p -> true);

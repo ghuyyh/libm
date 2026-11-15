@@ -16,8 +16,7 @@ public class BookCopyDAO {
         List<BookCopy> list = new ArrayList<>();
         try (
                 Connection conn = dbconnect.getConnection();
-                PreparedStatement ps = conn.prepareStatement(listcopy_q);
-            ) {
+                PreparedStatement ps = conn.prepareStatement(listcopy_q);) {
             ps.setString(1, book_id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -36,4 +35,36 @@ public class BookCopyDAO {
         }
         return list;
     }
+
+    public List<BookCopy> get_title_available_copy(String book_id) {
+        String listcopy_q = """
+                SELECT bc.Book_ID, bc.Status, b.Title, bc.Copy_ID, bc.Shelf_Location, bc.Condition_Notes
+                FROM Book_Copy bc
+                JOIN Book b ON bc.Book_ID = b.Book_ID
+                WHERE bc.Book_ID = ?
+                AND bc.Status = 'Available'
+                        """;
+        List<BookCopy> list = new ArrayList<>();
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(listcopy_q);) {
+            ps.setString(1, book_id);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    BookCopy copy = new BookCopy(
+                            rs.getString("Book_ID"),
+                            rs.getString("Copy_ID"),
+                            rs.getString("Shelf_Location"),
+                            rs.getString("Status"),
+                            rs.getString("Condition_Notes"));
+                    list.add(copy);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
 }

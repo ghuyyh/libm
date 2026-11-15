@@ -12,7 +12,21 @@ import com.pdm.model.BookTitle;
 
 public class BookTitleDAO {
     public List<BookTitle> get_book() {
-        String listbook_q = "select Book_ID, ISBN, Title, Publication_Year, Publisher_Name from Book b left join Publisher p on b.Publisher_ID = p.Publisher_ID";
+        String listbook_q = """
+                SELECT b.Book_ID, b.ISBN, b.Title, b.Publication_Year,
+                       b.Category_ID, c.Category_Name,
+                       b.Publisher_ID, p.Publisher_Name,
+                       GROUP_CONCAT(DISTINCT a.Author_Name ORDER BY ba.Author_Order SEPARATOR ', ') AS Authors,
+                       COUNT(DISTINCT CASE WHEN bc.Status = 'Available' THEN bc.Copy_ID END) AS Available_Copies
+                FROM Book b
+                JOIN Category c ON b.Category_ID = c.Category_ID
+                JOIN Publisher p ON b.Publisher_ID = p.Publisher_ID
+                LEFT JOIN Book_Author ba ON b.Book_ID = ba.Book_ID
+                LEFT JOIN Author a ON ba.Author_ID = a.Author_ID
+                LEFT JOIN Book_Copy bc ON b.Book_ID = bc.Book_ID
+                GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publication_Year, b.Category_ID, c.Category_Name, b.Publisher_ID, p.Publisher_Name
+                ORDER BY b.Book_ID ASC;
+                        """;
         List<BookTitle> list = new ArrayList<>();
         try (
                 Connection conn = dbconnect.getConnection();
@@ -27,7 +41,8 @@ public class BookTitleDAO {
                         rs.getString("ISBN"),
                         rs.getString("Title"),
                         rs.getString("Publisher_Name"),
-                        rs.getInt("Publication_Year"));
+                        rs.getInt("Publication_Year"),
+                        rs.getInt("Available_Copies"));
                 list.add(book);
             }
 
@@ -98,7 +113,6 @@ public class BookTitleDAO {
                 Connection conn = dbconnect.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery();) {
-
             while (rs.next()) {
                 BookTitle book = new BookTitle(
                         rs.getString("Book_ID"),
@@ -112,4 +126,44 @@ public class BookTitleDAO {
         return list;
     }
 
+    public List<BookTitle> search_book(String text) {
+        List<BookTitle> list = new ArrayList<>();
+        String sql = """
+                SELECT b.Book_ID, b.ISBN, b.Title, b.Publication_Year, c.Category_Name, p.Publisher_Name,
+                       GROUP_CONCAT(DISTINCT a.Author_Name ORDER BY ba.Author_Order SEPARATOR ', ') AS Authors,
+                       COUNT(DISTINCT CASE WHEN bc.Status = 'Available' THEN bc.Copy_ID END) AS Available_Copies
+                FROM Book b
+                JOIN Category c ON b.Category_ID = c.Category_ID
+                JOIN Publisher p ON b.Publisher_ID = p.Publisher_ID
+                LEFT JOIN Book_Author ba ON b.Book_ID = ba.Book_ID
+                LEFT JOIN Author a ON ba.Author_ID = a.Author_ID
+                LEFT JOIN Book_Copy bc ON b.Book_ID = bc.Book_ID
+                WHERE b.Book_ID LIKE ? OR b.Title LIKE ? OR b.ISBN LIKE ?
+                GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publication_Year, c.Category_Name, p.Publisher_Name
+                ORDER BY b.Title ASC;
+                                        """;
+
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setString(1, "%" + text + "%");
+            ps.setString(2, "%" + text + "%");
+            ps.setString(3, "%" + text + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    BookTitle book = new BookTitle(
+                            rs.getString("Book_ID"),
+                            rs.getString("ISBN"),
+                            rs.getString("Title"),
+                            rs.getString("Publisher_Name"),
+                            rs.getInt("Publication_Year"),
+                            rs.getInt("Available_Copies"));
+                    list.add(book);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return list;
+    }
 }

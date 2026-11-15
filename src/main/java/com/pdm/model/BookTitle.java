@@ -7,13 +7,15 @@ public class BookTitle {
     private String publisher;
     private int publishYear;
     private int borrowed_thisyear_count;
+    private int available_copies_count;
 
-    public BookTitle(String bookID, String isbn, String title, String publisher, int publishYear) {
+    public BookTitle(String bookID, String isbn, String title, String publisher, int publishYear, int available_copies_count) {
         this.bookID = bookID;
         this.isbn = isbn;
         this.publisher = publisher;
         this.publishYear = publishYear;
         this.title = title;
+        this.available_copies_count = available_copies_count;
     }
 
     public BookTitle(String bookID, String title, int borrowed_thisyear_count) {
@@ -44,5 +46,9 @@ public class BookTitle {
 
     public int getPublishYear() {
         return publishYear;
+    }
+
+    public int getAvailable_copies_count() {
+        return available_copies_count;
     }
 }

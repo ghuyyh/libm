@@ -20,6 +20,12 @@ public class Member {
 
     }
 
+    public Member(String Member_ID, String Full_Name) {
+        this.Member_ID = Member_ID;
+        this.Full_Name = Full_Name;
+
+    }
+
     public String getMember_ID() {
         return Member_ID;
     }

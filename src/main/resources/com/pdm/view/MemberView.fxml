@@ -85,53 +85,78 @@
       </StackPane>
    </center>
    <bottom>
-      <TitledPane animated="false" text="Member details" BorderPane.alignment="CENTER">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="210.0" prefWidth="200.0">
-               <children>
-                  <GridPane hgap="10.0" vgap="8.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
-                    <columnConstraints>
-                      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="220.0" />
-                      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="220.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                    </rowConstraints>
+      <VBox spacing="4.0" BorderPane.alignment="CENTER">
+         <children>
+            <TitledPane animated="false" text="Member details">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="210.0" prefWidth="200.0">
                      <children>
-                        <Label text="Member ID" />
-                        <TextField fx:id="id_field" editable="false" promptText="Auto-generated for new member" GridPane.columnIndex="1" />
-                        <Label text="Full Name" GridPane.rowIndex="1" />
-                        <TextField fx:id="name_field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label text="Category" GridPane.rowIndex="2" />
-                        <ChoiceBox fx:id="cat_select" prefWidth="220.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Label text="Account Status" GridPane.rowIndex="3" />
-                        <ChoiceBox fx:id="status_select" prefWidth="220.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <GridPane hgap="10.0" vgap="8.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                          <columnConstraints>
+                            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="220.0" />
+                            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="220.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label text="Member ID" />
+                              <TextField fx:id="id_field" editable="false" promptText="Auto-generated for new member" GridPane.columnIndex="1" />
+                              <Label text="Full Name" GridPane.rowIndex="1" />
+                              <TextField fx:id="name_field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Label text="Category" GridPane.rowIndex="2" />
+                              <ChoiceBox fx:id="cat_select" prefWidth="220.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Label text="Account Status" GridPane.rowIndex="3" />
+                              <ChoiceBox fx:id="status_select" prefWidth="220.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                        <Label text="Email" GridPane.columnIndex="2" />
-                        <TextField fx:id="email_field" GridPane.columnIndex="3" />
-                        <Label text="Identity Card" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                        <TextField fx:id="identity_field" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                        <Label text="Membership Expiry" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                        <DatePicker fx:id="expiry_picker" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                        <Label text="Tip" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-                        <Label text="Select a row to edit, or New/Clear to add." GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                              <Label text="Email" GridPane.columnIndex="2" />
+                              <TextField fx:id="email_field" GridPane.columnIndex="3" />
+                              <Label text="Identity Card" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                              <TextField fx:id="identity_field" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                              <Label text="Membership Expiry" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                              <DatePicker fx:id="expiry_picker" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                              <Label text="Tip" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                              <Label text="Select a row to edit, or New/Clear to add." GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                           </children>
+                        </GridPane>
+                        <HBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="10.0">
+                           <children>
+                              <Button mnemonicParsing="false" onAction="#addMember" text="Add member" />
+                              <Button mnemonicParsing="false" onAction="#updateMember" text="Update" />
+                              <Button mnemonicParsing="false" onAction="#deleteMember" text="Delete" />
+                           </children>
+                        </HBox>
                      </children>
-                  </GridPane>
-                  <HBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="10.0">
+                  </AnchorPane>
+              </content>
+            </TitledPane>
+            <TitledPane animated="false" expanded="true" text="Overdue loans today (selected member)">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="170.0" prefWidth="200.0">
                      <children>
-                        <Button mnemonicParsing="false" onAction="#addMember" text="Add member" />
-                        <Button mnemonicParsing="false" onAction="#updateMember" text="Update" />
-                        <Button mnemonicParsing="false" onAction="#deleteMember" text="Delete" />
+                        <TableView fx:id="overdue_table" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <columns>
+                              <TableColumn fx:id="col_od_loanid" prefWidth="80.0" text="Loan ID" />
+                              <TableColumn fx:id="col_od_detailid" prefWidth="70.0" text="Detail" />
+                              <TableColumn fx:id="col_od_title" prefWidth="260.0" text="Book Title" />
+                              <TableColumn fx:id="col_od_copy" prefWidth="70.0" text="Copy" />
+                              <TableColumn fx:id="col_od_borrow" prefWidth="100.0" text="Borrow Date" />
+                              <TableColumn fx:id="col_od_due" prefWidth="100.0" text="Due Date" />
+                              <TableColumn fx:id="col_od_days" prefWidth="80.0" text="Days Late" />
+                              <TableColumn fx:id="col_od_fine" prefWidth="110.0" text="Fine Amount" />
+                           </columns>
+                        </TableView>
+                        <Label fx:id="overdue_info" text="Select a member to view overdue loans today." AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="6.0" />
                      </children>
-                  </HBox>
-               </children>
-            </AnchorPane>
-        </content>
-      </TitledPane>
+                  </AnchorPane>
+               </content>
+            </TitledPane>
+         </children>
+      </VBox>
    </bottom>
 </BorderPane>

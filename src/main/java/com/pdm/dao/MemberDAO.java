@@ -193,6 +193,54 @@ public class MemberDAO {
         }
     }
 
+    public List<OverdueLoanInfo> get_overdue_loans_today(String memberId, String fullName) {
+        // S4 (Topic Q2) in query file: overdue loans of a specific member today.
+        String sql;
+        try {
+            sql = requireQueryFromFile("S4");
+        } catch (RuntimeException e) {
+            // Fallback aligned with S4 in library_queries.sql / database schema
+            sql = """
+                    SELECT ldf.Loan_ID, ldf.Detail_ID, m.Member_ID, m.Full_Name AS Member_Name,
+                           b.Title AS Book_Title, ldf.Copy_ID, lt.Borrow_Date, ldf.Due_Date, ldf.Days_Late, ldf.Fine_Amount
+                    FROM Loan_Detail_Fine ldf
+                    JOIN Loan_Transaction lt ON ldf.Loan_ID = lt.Loan_ID
+                    JOIN Member m ON ldf.Member_ID = m.Member_ID
+                    JOIN Book b ON ldf.Book_ID = b.Book_ID
+                    WHERE (m.Member_ID = ? OR m.Full_Name LIKE ?)
+                      AND ldf.Return_Date IS NULL
+                      AND ldf.Due_Date < CURRENT_DATE
+                    ORDER BY ldf.Due_Date ASC
+                    """;
+        }
+        List<OverdueLoanInfo> list = new ArrayList<>();
+        String safeName = fullName == null ? "" : fullName.trim();
+        String memberLike = "%" + safeName + "%";
+        try (Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId == null ? "" : memberId);
+            ps.setString(2, memberLike);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Date borrow = rs.getDate("Borrow_Date");
+                    Date due = rs.getDate("Due_Date");
+                    list.add(new OverdueLoanInfo(
+                            rs.getString("Loan_ID"),
+                            rs.getString("Detail_ID"),
+                            rs.getString("Book_Title"),
+                            rs.getString("Copy_ID"),
+                            borrow != null ? borrow.toLocalDate() : null,
+                            due != null ? due.toLocalDate() : null,
+                            rs.getInt("Days_Late"),
+                            rs.getBigDecimal("Fine_Amount") != null ? rs.getBigDecimal("Fine_Amount").doubleValue() : 0.0));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     private String requireQueryFromFile(String key) {
         for (Path path : QUERY_FILE_CANDIDATES) {
             if (!Files.isRegularFile(path)) {
@@ -339,5 +387,37 @@ public class MemberDAO {
         public String toString() {
             return name;
         }
+    }
+
+    public static class OverdueLoanInfo {
+        private final String loanId;
+        private final String detailId;
+        private final String bookTitle;
+        private final String copyId;
+        private final LocalDate borrowDate;
+        private final LocalDate dueDate;
+        private final int daysLate;
+        private final double fineAmount;
+
+        public OverdueLoanInfo(String loanId, String detailId, String bookTitle, String copyId, LocalDate borrowDate,
+                LocalDate dueDate, int daysLate, double fineAmount) {
+            this.loanId = loanId;
+            this.detailId = detailId;
+            this.bookTitle = bookTitle;
+            this.copyId = copyId;
+            this.borrowDate = borrowDate;
+            this.dueDate = dueDate;
+            this.daysLate = daysLate;
+            this.fineAmount = fineAmount;
+        }
+
+        public String getLoan_ID() { return loanId; }
+        public String getDetail_ID() { return detailId; }
+        public String getBook_Title() { return bookTitle; }
+        public String getCopy_ID() { return copyId; }
+        public LocalDate getBorrow_Date() { return borrowDate; }
+        public LocalDate getDue_Date() { return dueDate; }
+        public int getDays_Late() { return daysLate; }
+        public double getFine_Amount() { return fineAmount; }
     }
 }

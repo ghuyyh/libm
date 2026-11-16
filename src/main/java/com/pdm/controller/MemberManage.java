@@ -5,8 +5,13 @@ import java.util.List;
 
 import com.pdm.dao.MemberDAO;
 import com.pdm.dao.MemberDAO.MemberCategoryOption;
+import com.pdm.dao.MemberDAO.OverdueLoanInfo;
 import com.pdm.model.Member;
 
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -40,6 +45,27 @@ public class MemberManage extends basecontrol {
     private TableColumn<Member, Integer> col_period;
 
     @FXML
+    private TableView<OverdueLoanInfo> overdue_table;
+    @FXML
+    private TableColumn<OverdueLoanInfo, String> col_od_loanid;
+    @FXML
+    private TableColumn<OverdueLoanInfo, String> col_od_detailid;
+    @FXML
+    private TableColumn<OverdueLoanInfo, String> col_od_title;
+    @FXML
+    private TableColumn<OverdueLoanInfo, String> col_od_copy;
+    @FXML
+    private TableColumn<OverdueLoanInfo, LocalDate> col_od_borrow;
+    @FXML
+    private TableColumn<OverdueLoanInfo, LocalDate> col_od_due;
+    @FXML
+    private TableColumn<OverdueLoanInfo, Integer> col_od_days;
+    @FXML
+    private TableColumn<OverdueLoanInfo, Double> col_od_fine;
+    @FXML
+    private Label overdue_info;
+
+    @FXML
     private Label mem_count;
     @FXML
     private TextField search_field;
@@ -60,6 +86,7 @@ public class MemberManage extends basecontrol {
 
     private final MemberDAO memberDAO = new MemberDAO();
     private final ObservableList<Member> memList = FXCollections.observableArrayList();
+    private final ObservableList<OverdueLoanInfo> overdueList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -74,6 +101,16 @@ public class MemberManage extends basecontrol {
 
         mem_table.setItems(memList);
 
+        col_od_loanid.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLoan_ID()));
+        col_od_detailid.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDetail_ID()));
+        col_od_title.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getBook_Title()));
+        col_od_copy.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCopy_ID()));
+        col_od_borrow.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getBorrow_Date()));
+        col_od_due.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getDue_Date()));
+        col_od_days.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getDays_Late()).asObject());
+        col_od_fine.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getFine_Amount()).asObject());
+        overdue_table.setItems(overdueList);
+
         status_select.setItems(FXCollections.observableArrayList("Active", "Suspended", "Expired", "Locked"));
         status_select.setValue("Active");
         loadCategories();
@@ -81,6 +118,10 @@ public class MemberManage extends basecontrol {
         mem_table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 populateForm(newSelection);
+                loadOverdueLoans(newSelection);
+            } else {
+                overdueList.clear();
+                overdue_info.setText("Select a member to view overdue loans today.");
             }
         });
 
@@ -124,6 +165,28 @@ public class MemberManage extends basecontrol {
         status_select.setValue("Active");
         if (!cat_select.getItems().isEmpty() && cat_select.getValue() == null) {
             cat_select.setValue(cat_select.getItems().get(0));
+        }
+        overdueList.clear();
+        overdue_info.setText("Select a member to view overdue loans today.");
+    }
+
+    private void loadOverdueLoans(Member member) {
+        if (member == null) {
+            overdueList.clear();
+            overdue_info.setText("Select a member to view overdue loans today.");
+            return;
+        }
+        try {
+            overdueList.setAll(memberDAO.get_overdue_loans_today(member.getMember_ID(), member.getFull_Name()));
+            if (overdueList.isEmpty()) {
+                overdue_info.setText("No overdue loans today for " + member.getFull_Name() + " (" + member.getMember_ID() + ").");
+            } else {
+                overdue_info.setText(overdueList.size() + " overdue loan(s) today for " + member.getFull_Name() + " (" + member.getMember_ID() + ").");
+            }
+        } catch (Exception e) {
+            overdueList.clear();
+            overdue_info.setText("Unable to load overdue loans today for this member.");
+            e.printStackTrace();
         }
     }
 
@@ -205,6 +268,7 @@ public class MemberManage extends basecontrol {
             if (memberId.equals(member.getMember_ID())) {
                 mem_table.getSelectionModel().select(member);
                 populateForm(member);
+                loadOverdueLoans(member);
                 break;
             }
         }

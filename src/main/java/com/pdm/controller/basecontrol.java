@@ -30,7 +30,7 @@ public class basecontrol {
             stage.show();
             System.out.println("home ok");
         } catch (IOException e) {
-            e.printStackTrace();
+           System.out.println(e.getMessage());
         }
 
     }
@@ -49,7 +49,7 @@ public class basecontrol {
             stage.show();
             System.out.println("book ok");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
     }
@@ -68,7 +68,7 @@ public class basecontrol {
             stage.show();
             System.out.println("member ok");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
     }
@@ -87,7 +87,7 @@ public class basecontrol {
             stage.show();
             System.out.println("loans ok");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
     }
@@ -106,7 +106,7 @@ public class basecontrol {
             stage.show();
             System.out.println("reservation ok");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
     }
@@ -125,7 +125,7 @@ public class basecontrol {
             stage.show();
             System.out.println("fines ok");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
     }
@@ -144,7 +144,7 @@ public class basecontrol {
             stage.show();
             System.out.println("reports ok");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
     }

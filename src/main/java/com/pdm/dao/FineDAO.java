@@ -8,25 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.pdm.connect.dbconnect;
+import com.pdm.model.Fine;
 
 public class FineDAO {
-    public List<String> get_fine() { // chuaw xonmg
+    public List<Fine> get_fines() { // chuaw xonmg
         String listfine_q = """
-                SELECT lt.Loan_ID, ld.Detail_ID, lt.Member_ID, m.Full_Name AS Member_Name,
-                       b.Book_ID, b.ISBN, b.Title, ld.Copy_ID,
-                       lt.Borrow_Date AS Date_Out, lt.Due_Date AS DateDue, ld.Return_Date AS Date_Return,
-                       CASE
-                           WHEN ld.Return_Date IS NOT NULL THEN 'Returned'
-                           WHEN lt.Due_Date < CURRENT_DATE THEN 'Overdue'
-                           ELSE 'Borrowing'
-                       END AS Status,
-                       ld.Payment_Status
-                FROM Loan_Transaction lt
-                JOIN Loan_Detail ld ON lt.Loan_ID = ld.Loan_ID
-                JOIN Member m ON lt.Member_ID = m.Member_ID
-                JOIN Book b ON ld.Book_ID = b.Book_ID
-                ORDER BY lt.Borrow_Date DESC, lt.Loan_ID ASC;""";
-        List<String> list = new ArrayList<>();
+                SELECT ldf.Loan_ID, ldf.Detail_ID, ldf.Member_ID, m.Full_Name AS Member_Name,
+                       b.Title AS Book_Title, ldf.Copy_ID, ldf.Due_Date, ldf.Return_Date,
+                       ldf.Days_Late, ldf.Fine_Amount, ldf.Payment_Status
+                FROM Loan_Detail_Fine ldf
+                JOIN Member m ON ldf.Member_ID = m.Member_ID
+                JOIN Book b ON ldf.Book_ID = b.Book_ID
+                WHERE ldf.Fine_Amount > 0
+                ORDER BY ldf.Payment_Status DESC, ldf.Due_Date ASC;
+                """;
+        List<Fine> list = new ArrayList<>();
         try (
                 Connection conn = dbconnect.getConnection();
                 PreparedStatement ps = conn.prepareStatement(listfine_q);
@@ -35,7 +31,19 @@ public class FineDAO {
         ) {
 
             while (rs.next()) {
-                String fine = rs.getString("Fine_Amount");
+                Fine fine = new Fine(
+                        rs.getString("Loan_ID"),
+                        rs.getString("Detail_ID"),
+                        rs.getString("Member_ID"),
+                        rs.getString("Member_Name"),
+                        rs.getString("Book_Title"),
+                        rs.getString("Copy_ID"),
+                        rs.getDate("Due_Date"),
+                        rs.getDate("Return_Date"),
+                        rs.getInt("Days_Late"),
+                        rs.getBigDecimal("Fine_Amount"),
+                        rs.getString("Payment_Status")
+                );
                 list.add(fine);
             }
 
@@ -44,6 +52,5 @@ public class FineDAO {
         }
         return list;
     }
-
 
 }

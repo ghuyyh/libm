@@ -20,7 +20,8 @@ import com.pdm.model.MemCat;
 import com.pdm.model.Member;
 
 public class MemberDAO {
-    // Member tab uses queries from the existing query files (library_queries.sql / query_dev/library_queries.sql)
+    // Member tab uses queries from the existing query files (library_queries.sql /
+    // query_dev/library_queries.sql)
     // and operates on the database schema defined in database_dev/database.sql.
 
     private static final Path[] QUERY_FILE_CANDIDATES = new Path[] {
@@ -45,7 +46,8 @@ public class MemberDAO {
             """;
 
     public List<Member> get_member() {
-        // Based on M1 in query file, extended with member fields required by UI and database schema.
+        // Based on M1 in query file, extended with member fields required by UI and
+        // database schema.
         requireQueryFromFile("M1");
         String sql = MEMBER_LIST_BASE + MEMBER_LIST_GROUP_ORDER;
         return queryMembers(sql, null);
@@ -155,9 +157,11 @@ public class MemberDAO {
         }
     }
 
-    public boolean updateMember(String memberId, String memberTypeId, String fullName, String email, String identityCard,
+    public boolean updateMember(String memberId, String memberTypeId, String fullName, String email,
+            String identityCard,
             LocalDate expiryDate, String accountStatus) {
-        // M3 in query file defines member update; extended to all editable fields in database schema.
+        // M3 in query file defines member update; extended to all editable fields in
+        // database schema.
         requireQueryFromFile("M3");
         String sql = """
                 UPDATE Member
@@ -232,7 +236,8 @@ public class MemberDAO {
                             borrow != null ? borrow.toLocalDate() : null,
                             due != null ? due.toLocalDate() : null,
                             rs.getInt("Days_Late"),
-                            rs.getBigDecimal("Fine_Amount") != null ? rs.getBigDecimal("Fine_Amount").doubleValue() : 0.0));
+                            rs.getBigDecimal("Fine_Amount") != null ? rs.getBigDecimal("Fine_Amount").doubleValue()
+                                    : 0.0));
                 }
             }
         } catch (SQLException e) {
@@ -256,7 +261,8 @@ public class MemberDAO {
                 throw new IllegalStateException("Failed to read query file: " + path, e);
             }
         }
-        throw new IllegalStateException("Query '" + key + "' not found in library_queries.sql/query_dev/library_queries.sql");
+        throw new IllegalStateException(
+                "Query '" + key + "' not found in library_queries.sql/query_dev/library_queries.sql");
     }
 
     private String extractQuery(String content, String key) {
@@ -345,7 +351,7 @@ public class MemberDAO {
                 MemCat memCat = new MemCat(
                         rs.getString("Member_Type_ID"),
                         rs.getString("Type_Name"),
-                        rs.getLong("Total_Outstanding_Fines"));
+                        rs.getBigDecimal("Total_Outstanding_Fines"));
                 list.add(memCat);
             }
         } catch (SQLException e) {
@@ -411,13 +417,36 @@ public class MemberDAO {
             this.fineAmount = fineAmount;
         }
 
-        public String getLoan_ID() { return loanId; }
-        public String getDetail_ID() { return detailId; }
-        public String getBook_Title() { return bookTitle; }
-        public String getCopy_ID() { return copyId; }
-        public LocalDate getBorrow_Date() { return borrowDate; }
-        public LocalDate getDue_Date() { return dueDate; }
-        public int getDays_Late() { return daysLate; }
-        public double getFine_Amount() { return fineAmount; }
+        public String getLoan_ID() {
+            return loanId;
+        }
+
+        public String getDetail_ID() {
+            return detailId;
+        }
+
+        public String getBook_Title() {
+            return bookTitle;
+        }
+
+        public String getCopy_ID() {
+            return copyId;
+        }
+
+        public LocalDate getBorrow_Date() {
+            return borrowDate;
+        }
+
+        public LocalDate getDue_Date() {
+            return dueDate;
+        }
+
+        public int getDays_Late() {
+            return daysLate;
+        }
+
+        public double getFine_Amount() {
+            return fineAmount;
+        }
     }
 }

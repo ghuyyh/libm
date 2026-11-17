@@ -1,11 +1,13 @@
 package com.pdm.model;
 
+import java.math.BigDecimal;
+
 public class MemCat {
     String Member_Type_ID;
     String Type_Name;
-    Long Total_Unpaid_Fine;
+    BigDecimal Total_Unpaid_Fine;
 
-    public MemCat(String member_Type_ID, String type_Name, Long total_Unpaid_Fine) {
+    public MemCat(String member_Type_ID, String type_Name, BigDecimal total_Unpaid_Fine) {
         Member_Type_ID = member_Type_ID;
         Type_Name = type_Name;
         Total_Unpaid_Fine = total_Unpaid_Fine;
@@ -19,7 +21,7 @@ public class MemCat {
         return Type_Name;
     }
 
-    public Long getTotal_Unpaid_Fine() {
+    public BigDecimal getTotal_Unpaid_Fine() {
         return Total_Unpaid_Fine;
     }
 }

@@ -172,7 +172,7 @@ CREATE TABLE Author (
  
 CREATE TABLE Book (
     Book_ID          VARCHAR(20)  NOT NULL,
-    Category_ID      VARCHAR(20)  NOT NULL,
+    Category_ID      VARCHAR(20)  NOT NULL DEFAULT 'CAT00',
     Publisher_ID     VARCHAR(20)  NOT NULL,
     ISBN             VARCHAR(20)  NOT NULL,
     Title            VARCHAR(255) NOT NULL,
@@ -461,8 +461,9 @@ INSERT INTO Member_Phone (Member_ID, Phone) VALUES
 ('M13', '0901112213'),
 ('M14', '0901112214');
  
---  Category (15 rows)
+--  Category (16 rows)
 INSERT INTO Category (Category_ID, Category_Name, Description) VALUES
+('CAT00', 'Uncategorized', 'Books that unassigned to a specific category.'),
 ('CAT01', 'Computer Science', 'Books related to computing, programming, and algorithms.'),
 ('CAT02', 'Mathematics', 'Calculus, algebra, geometry, and applied mathematics.'),
 ('CAT03', 'Physics', 'Quantum mechanics, thermodynamics, and classical physics.'),

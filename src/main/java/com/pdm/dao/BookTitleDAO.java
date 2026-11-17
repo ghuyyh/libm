@@ -131,17 +131,16 @@ public class BookTitleDAO {
     public List<BookTitle> search_book(String text) {
         List<BookTitle> list = new ArrayList<>();
         String sql = """
-                SELECT b.Book_ID, b.ISBN, b.Title, b.Publication_Year, c.Category_Name, p.Publisher_Name,
+                SELECT b.Book_ID, b.ISBN, b.Title, b.Publisher_ID, b.Publication_Year, p.Publisher_Name,
                        GROUP_CONCAT(DISTINCT a.Author_Name ORDER BY ba.Author_Order SEPARATOR ', ') AS Authors,
                        COUNT(DISTINCT CASE WHEN bc.Status = 'Available' THEN bc.Copy_ID END) AS Available_Copies
                 FROM Book b
-                JOIN Category c ON b.Category_ID = c.Category_ID
                 JOIN Publisher p ON b.Publisher_ID = p.Publisher_ID
                 LEFT JOIN Book_Author ba ON b.Book_ID = ba.Book_ID
                 LEFT JOIN Author a ON ba.Author_ID = a.Author_ID
                 LEFT JOIN Book_Copy bc ON b.Book_ID = bc.Book_ID
-                WHERE b.Book_ID LIKE ? OR b.Title LIKE ? OR b.ISBN LIKE ?
-                GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publication_Year, c.Category_Name, p.Publisher_Name
+                WHERE b.Book_ID LIKE ? OR b.Title LIKE ? OR b.ISBN LIKE ? or p.Publisher_Name LIKE ? 
+                GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publisher_ID, b.Publication_Year, p.Publisher_Name
                 ORDER BY b.Title ASC;
                     """;
 
@@ -151,6 +150,7 @@ public class BookTitleDAO {
             ps.setString(1, "%" + text + "%");
             ps.setString(2, "%" + text + "%");
             ps.setString(3, "%" + text + "%");
+            ps.setString(4, "%" + text + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     BookTitle book = new BookTitle(

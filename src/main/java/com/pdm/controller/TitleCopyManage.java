@@ -199,7 +199,7 @@ public class TitleCopyManage extends basecontrol {
             }
         });
 
-        search_field.setOnAction(event -> {
+        search_field.setOnAction(event -> { //search book
             System.out.println("search:" + search_field.getText());
             String searchText = search_field.getText();
             if (searchText.isEmpty()) {

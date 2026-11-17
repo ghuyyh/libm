@@ -16,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -196,6 +197,9 @@ public class MemberManage extends basecontrol {
         if (form == null) {
             return;
         }
+        if (!confirmAction("Add member", "Add " + form.fullName + " as a new member?")) {
+            return;
+        }
         boolean success = memberDAO.addMember(form.typeId, form.fullName, form.email, form.identityCard, form.expiryDate,
                 form.status);
         if (success) {
@@ -218,6 +222,9 @@ public class MemberManage extends basecontrol {
         if (form == null) {
             return;
         }
+        if (!confirmAction("Update member", "Save changes to member " + memberId + " (" + form.fullName + ")?")) {
+            return;
+        }
         boolean success = memberDAO.updateMember(memberId, form.typeId, form.fullName, form.email, form.identityCard,
                 form.expiryDate, form.status);
         if (success) {
@@ -234,6 +241,10 @@ public class MemberManage extends basecontrol {
         Member selected = mem_table.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showError("Please select a member to delete.");
+            return;
+        }
+        if (!confirmAction("Delete member",
+                "Delete " + selected.getFull_Name() + " (" + selected.getMember_ID() + ")? This cannot be undone.")) {
             return;
         }
         boolean success = memberDAO.deleteMember(selected.getMember_ID());
@@ -308,6 +319,15 @@ public class MemberManage extends basecontrol {
         }
 
         return new MemberForm(category.getId(), fullName, email, identity, expiry, status);
+    }
+
+    private boolean confirmAction(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Members");
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        alert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+        return alert.showAndWait().filter(ButtonType.OK::equals).isPresent();
     }
 
     private void showError(String message) {

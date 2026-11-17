@@ -14,7 +14,7 @@ import com.pdm.model.Member;
 public class AuthorDAO {
     public List<Author> get_book_auth(String book_id) {
         String sql = """
-                select a.Author_ID, a.Author_Name, a.Biography
+                select a.Author_ID, a.Author_Name, a.Biography, ba.Author_Order
                 from Book_Author ba join Author a on ba.Author_ID = a.Author_ID
                 where ba.Book_ID = ?
                 """;
@@ -28,7 +28,8 @@ public class AuthorDAO {
                     Author author = new Author(
                             rs.getString("Author_ID"),
                             rs.getString("Author_Name"),
-                            rs.getString("Biography"));
+                            rs.getString("Biography"),
+                            rs.getInt("Author_Order"));
                     list.add(author);
                 }
             }
@@ -40,7 +41,7 @@ public class AuthorDAO {
     }
 
     public List<Author> get_auth(String auth_id) {
-        String sql = "select Author_ID, Author_Name, Biography from Author where Author_ID = ?";
+        String sql = "select Author_ID, Author_Name, Biography, from Author where Author_ID = ?";
         List<Author> list = new ArrayList<>();
         try (
                 Connection conn = dbconnect.getConnection();
@@ -142,9 +143,9 @@ public class AuthorDAO {
 
     public boolean addAuthorToBook(String bookID, String authorID) {
         String sql = """
-                INSERT INTO Book_Author (Book_ID, Author_ID, Author_Order)
-                VALUES (?, ?, ?);
-        """;
+                        INSERT INTO Book_Author (Book_ID, Author_ID, Author_Order)
+                        VALUES (?, ?, ?);
+                """;
 
         int authorOrder = generateAuthorOrder(bookID);
         try (
@@ -161,7 +162,45 @@ public class AuthorDAO {
         }
     }
 
+    public boolean removeAuthorFromBook(String bookID, String authorID, int authorOrder) {
+        String deleteSql = """
+                DELETE FROM Book_Author
+                WHERE Book_ID = ? AND Author_ID = ?;
+                """;
+        String movingSQL = """
+                UPDATE Book_Author
+                SET Author_Order = Author_Order - 1
+                WHERE Book_ID = ?
+                  AND Author_Order > ?
+                ORDER BY Author_Order ASC;
+                """;
 
+        try (Connection conn = dbconnect.getConnection();
+                PreparedStatement deletePs = conn.prepareStatement(deleteSql);
+                PreparedStatement compactPs = conn.prepareStatement(movingSQL);) {
+            try {
+                conn.setAutoCommit(false);
+
+                deletePs.setString(1, bookID);
+                deletePs.setString(2, authorID);
+                int rowsAffected = deletePs.executeUpdate();
+
+                compactPs.setString(1, bookID);
+                compactPs.setInt(2, authorOrder);
+                compactPs.executeUpdate();
+
+                conn.commit();
+                return rowsAffected > 0;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.out.println(e.getMessage());
+               return false;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
 
     public int generateAuthorOrder(String bookID) {
         String sql = "SELECT MAX(Author_Order) AS max_order FROM Book_Author WHERE Book_ID = ?";
@@ -172,13 +211,13 @@ public class AuthorDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     int maxOrder = rs.getInt("max_order");
-                    return maxOrder + 1; 
+                    return maxOrder + 1;
                 }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return 1; 
+        return 1;
     }
 
     public String generateAuthorID() {

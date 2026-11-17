@@ -4,29 +4,25 @@
 -- DATABASE:    library_management_db (MySQL 8.4 LTS)
 -- AUTHORS:     Nguyen Ngoc Phuong Nam & Nguyen Duc Thinh (Query Developers)
 -- ============================================================================
--- [QUAN TRỌNG - LƯU Ý CHUNG CHO CẢ NHÓM & NHÓM JAVA DEVELOPER]
--- 1. Cột dẫn xuất đã tách sang View:
---    - Không gọi cột `Total_Copies_Borrowed` trong `Loan_Transaction` -> dùng View `Loan_Summary`.
---    - Không gọi cột `Fine_Amount` hay `Days_Late` trong `Loan_Detail` -> dùng View `Loan_Detail_Fine`.
--- 2. Định dạng mã dữ liệu mẫu trong DB: `'B01'`, `'M01'`, `'AUTH01'`, `'S01'`, `'L01'`, `'C01'`, `'RES01'`.
+-- [LƯU Ý ĐỒNG BỘ SCHEMA & GIAO DIỆN JAVAFX]
+-- 1. Derived Attributes (ERD nét đứt -> Views):
+--    - Không gọi `Total_Copies_Borrowed` trên `Loan_Transaction` -> dùng View `Loan_Summary`.
+--    - Không gọi `Fine_Amount` hay `Days_Late` trên `Loan_Detail` -> dùng View `Loan_Detail_Fine`.
+-- 2. Xử lý `Category_ID` trên bảng `Book`:
+--    - Cột `Category_ID` vẫn giữ trong DB với giá trị mặc định `DEFAULT 'CAT01'`.
+--    - Phần 1 (D5) vẫn giữ Query 7 thống kê theo `Category`; Phần 2 (UI) đã ẩn `Category`
+--      để bên Java không cần hiển thị hoặc truyền `Category_ID` khi thêm/sửa sách.
 -- 3. Quy tắc Trigger 3 (Trả sách):
---    - Khi cập nhật `Return_Date` trong `Loan_Detail`, bắt buộc cập nhật kèm `Payment_Status`:
---      + Nếu trả trễ (`Return_Date > Due_Date`) -> `Payment_Status` phải là `'Unpaid'` (không được để `'None'`).
---      + Nếu trả đúng/trước hạn -> `Payment_Status` bắt buộc là `'None'`.
--- 4. Ràng buộc bảng `Member`:
---    - Khi INSERT thành viên mới trên UI, bắt buộc nhập đủ `Email` (đúng format `@`), `Identity_Card`
---      (9-20 ký tự), và `Membership_Expiry_Date`, nếu thiếu MySQL sẽ báo lỗi CHECK/NOT NULL.
--- 5. Bảo mật & Chấm điểm (Mục 2.4):
---    - Tất cả dấu `?` ở PHẦN 2 phải được nhóm Java truyền qua `PreparedStatement` (cấm cộng chuỗi `+`).
---    - Nhớ test ô tìm kiếm với từ khóa `O'Reilly` (có sẵn trong bảng `Publisher`) để kiểm tra dấu nháy đơn `'`.
+--    - Khi cập nhật `Return_Date` trong `Loan_Detail`, bắt buộc cập nhật kèm `Payment_Status`
+--      ('Unpaid' nếu trả sau `Due_Date`, 'None' nếu trả đúng/trước hạn).
 -- ============================================================================
 
 USE library_management_db;
 
 
 -- ############################################################################
--- PHẦN 1: 12 CÂU TRUY VẤN SQL NÂNG CAO (DELIVERABLE D5 - CHẠY TRỰC TIẾP TRÊN WORKBENCH)
--- Lưu ý: Đã khớp 100% dữ liệu mẫu để mọi câu đều trả về kết quả khác rỗng (non-empty).
+-- PART 1: 12 ADVANCED SQL QUERIES (DELIVERABLE D5 - RUN DIRECTLY IN WORKBENCH)
+-- Note: Calibrated against sample data to ensure every query returns non-empty results.
 -- ############################################################################
 
 -- Query 1 (Topic Q1 - Multi-table Join): Retrieve all physical copies of a specific title ('B01') that are currently available.
@@ -147,13 +143,12 @@ HAVING SUM(ls.Total_Copies_Borrowed) > (
 
 
 -- ############################################################################
--- PHẦN 2: BỘ SQL DÙNG CHO GIAO DIỆN JAVAFX (DÀNH CHO NHÓM JAVA - PREPAREDSTATEMENT)
--- Lưu ý: Phần này dùng tham số `?` để gắn vào JDBC PreparedStatement, không chạy
---        trực tiếp một lượt trên Workbench.
+-- PART 2: JAVAFX UI SQL QUERIES (PREPAREDSTATEMENT - CATEGORY OMITTED FROM UI)
+-- Note: Uses `?` placeholders for JDBC PreparedStatement; do not execute directly as a batch.
 -- ############################################################################
 
 -- ============================================================================
--- MÀN HÌNH 1: HomeView.fxml (Thống kê nhanh Dashboard - Tùy chọn)
+-- SCREEN 1: HomeView.fxml (Dashboard Quick Statistics - Optional)
 -- ============================================================================
 SELECT 
     (SELECT COUNT(*) FROM Book) AS Total_Books,
@@ -164,45 +159,42 @@ SELECT
 
 
 -- ============================================================================
--- MÀN HÌNH 2: BookView.fxml (Quản lý Sách & Bản sao vật lý - Master-Detail + CRUD)
+-- SCREEN 2: BookView.fxml (Book & Physical Copy Management - Category Omitted from UI)
 -- ============================================================================
--- B1. Load danh sách tất cả đầu sách (kèm Thể loại, NXB, Tác giả, số bản sao Available)
+-- B1. Retrieve all book titles (with Publisher, Authors, and Available copy count)
 SELECT b.Book_ID, b.ISBN, b.Title, b.Publication_Year,
-       b.Category_ID, c.Category_Name,
        b.Publisher_ID, p.Publisher_Name,
        GROUP_CONCAT(DISTINCT a.Author_Name ORDER BY ba.Author_Order SEPARATOR ', ') AS Authors,
        COUNT(DISTINCT CASE WHEN bc.Status = 'Available' THEN bc.Copy_ID END) AS Available_Copies
 FROM Book b
-JOIN Category c ON b.Category_ID = c.Category_ID
 JOIN Publisher p ON b.Publisher_ID = p.Publisher_ID
 LEFT JOIN Book_Author ba ON b.Book_ID = ba.Book_ID
 LEFT JOIN Author a ON ba.Author_ID = a.Author_ID
 LEFT JOIN Book_Copy bc ON b.Book_ID = bc.Book_ID
-GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publication_Year, b.Category_ID, c.Category_Name, b.Publisher_ID, p.Publisher_Name
+GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publication_Year, b.Publisher_ID, p.Publisher_Name
 ORDER BY b.Book_ID ASC;
 
--- B2. Master-Detail: Bấm chọn 1 tựa sách ở bảng trên -> Load danh sách bản sao ở bảng dưới
+-- B2. Master-Detail: Retrieve physical copies for a selected book title
 SELECT Copy_ID, Shelf_Location, Status, Condition_Notes
 FROM Book_Copy
 WHERE Book_ID = ?
 ORDER BY Copy_ID ASC;
 
--- B3. Thêm / Sửa / Xóa Đầu sách (Book)
-INSERT INTO Book (Book_ID, Category_ID, Publisher_ID, ISBN, Title, Publication_Year) VALUES (?, ?, ?, ?, ?, ?);
-UPDATE Book SET Category_ID = ?, Publisher_ID = ?, ISBN = ?, Title = ?, Publication_Year = ? WHERE Book_ID = ?;
+-- B3. Insert / Update / Delete Book Title (MySQL automatically assigns Category_ID = DEFAULT 'CAT01')
+INSERT INTO Book (Book_ID, Publisher_ID, ISBN, Title, Publication_Year) VALUES (?, ?, ?, ?, ?);
+UPDATE Book SET Publisher_ID = ?, ISBN = ?, Title = ?, Publication_Year = ? WHERE Book_ID = ?;
 DELETE FROM Book WHERE Book_ID = ?;
 
--- B4. Thêm / Sửa / Xóa Bản sao sách (Book_Copy)
+-- B4. Insert / Update / Delete Physical Book Copy (Book_Copy)
 INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes) VALUES (?, ?, ?, ?, ?);
 UPDATE Book_Copy SET Shelf_Location = ?, Status = ?, Condition_Notes = ? WHERE Book_ID = ? AND Copy_ID = ?;
 DELETE FROM Book_Copy WHERE Book_ID = ? AND Copy_ID = ?;
 
 
 -- ============================================================================
--- MÀN HÌNH 3: MemberView.fxml (Controller: MemberManage)
--- Lưu ý: Alias cột khớp với fx:id trên TableView (col_memid, col_name, col_cat...)
+-- SCREEN 3: MemberView.fxml (Controller: MemberManage)
 -- ============================================================================
--- M1. Load danh sách độc giả lên bảng `mem_table`
+-- M1. Retrieve all members for TableView `mem_table` (with active loan count)
 SELECT m.Member_ID AS col_memid,
        m.Full_Name AS col_name,
        mc.Type_Name AS col_cat,
@@ -216,28 +208,27 @@ LEFT JOIN Loan_Detail ld ON lt.Loan_ID = ld.Loan_ID AND ld.Return_Date IS NULL
 GROUP BY m.Member_ID, m.Full_Name, mc.Type_Name, mc.Borrowing_Limit, mc.Loan_Period
 ORDER BY m.Member_ID ASC;
 
--- M2. Load danh sách hạng thẻ vào ChoiceBox `cat_select`
+-- M2. Retrieve all membership categories for ChoiceBox `cat_select`
 SELECT Member_Type_ID, Type_Name FROM Member_Category ORDER BY Member_Type_ID ASC;
 
--- M3. Nút `Update` ở khung dưới (Cập nhật Tên & Hạng thẻ)
+-- M3. Update Button: Update selected member's full name and membership category
 UPDATE Member
 SET Full_Name = ?,
     Member_Type_ID = (SELECT Member_Type_ID FROM Member_Category WHERE Type_Name = ?)
 WHERE Member_ID = ?;
 
--- M4. Nút `Add menber+` (Phải truyền đủ Email, Identity_Card, Membership_Expiry_Date)
+-- M4. Add Member Button: Register a new member (requires Email, Identity_Card, and Membership_Expiry_Date)
 INSERT INTO Member (Member_ID, Member_Type_ID, Full_Name, Email, Identity_Card, Membership_Expiry_Date, Account_Status)
 VALUES (?, ?, ?, ?, ?, ?, 'Active');
 
--- M5. Xóa độc giả (ON DELETE RESTRICT sẽ tự báo lỗi nếu độc giả từng mượn sách)
+-- M5. Delete Member (blocked by ON DELETE RESTRICT if member has loan history)
 DELETE FROM Member WHERE Member_ID = ?;
 
 
 -- ============================================================================
--- MÀN HÌNH 4: LoanView.fxml (Quản lý Mượn / Trả sách)
--- Lưu ý: Nhớ đặt fx:id cho TableView, CheckBox, các Label trong Details và 2 nút bấm.
+-- SCREEN 4: LoanView.fxml (Loan & Return Management)
 -- ============================================================================
--- L1. Load toàn bộ phiếu mượn lên bảng & khung Details
+-- L1. Retrieve all loan records for TableView and Details pane (with computed loan status)
 SELECT lt.Loan_ID, ld.Detail_ID, lt.Member_ID, m.Full_Name AS Member_Name,
        b.Book_ID, b.ISBN, b.Title, ld.Copy_ID,
        lt.Borrow_Date AS Date_Out, lt.Due_Date AS DateDue, ld.Return_Date AS Date_Return,
@@ -253,7 +244,7 @@ JOIN Member m ON lt.Member_ID = m.Member_ID
 JOIN Book b ON ld.Book_ID = b.Book_ID
 ORDER BY lt.Borrow_Date DESC, lt.Loan_ID ASC;
 
--- L2. CheckBox `Show overdue today` (Lọc các sách chưa trả và đã quá hạn)
+-- L2. CheckBox `Show overdue today`: Filter active loans that are past due today
 SELECT lt.Loan_ID, ld.Detail_ID, lt.Member_ID, m.Full_Name AS Member_Name,
        b.Book_ID, b.ISBN, b.Title, ld.Copy_ID,
        lt.Borrow_Date AS Date_Out, lt.Due_Date AS DateDue, ld.Return_Date AS Date_Return,
@@ -266,7 +257,7 @@ WHERE ld.Return_Date IS NULL
   AND lt.Due_Date < CURRENT_DATE
 ORDER BY lt.Due_Date ASC;
 
--- L3. Nút `Returned ✓` (Chạy 2 lệnh dưới đây trong cùng 1 Java Transaction)
+-- L3. `Returned ✓` Button: Record book return and release physical copy (execute within one transaction)
 UPDATE Loan_Detail ld
 JOIN Loan_Transaction lt ON ld.Loan_ID = lt.Loan_ID
 SET ld.Return_Date = CURRENT_DATE,
@@ -275,16 +266,16 @@ WHERE ld.Loan_ID = ? AND ld.Detail_ID = ? AND ld.Return_Date IS NULL;
 
 UPDATE Book_Copy SET Status = 'Available' WHERE Book_ID = ? AND Copy_ID = ?;
 
--- L4. Nút `New loan+` (Chạy 3 lệnh dưới đây trong cùng 1 Java Transaction)
+-- L4. `New loan+` Button: Create loan header, loan detail line, and mark copy as Borrowed (execute within one transaction)
 INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date) VALUES (?, ?, ?, CURRENT_DATE, ?);
 INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status) VALUES (?, ?, ?, ?, NULL, 0, 'None');
 UPDATE Book_Copy SET Status = 'Borrowed' WHERE Book_ID = ? AND Copy_ID = ?;
 
 
 -- ============================================================================
--- MÀN HÌNH 5: ReservationView.fxml (Controller: ReservationManage)
+-- SCREEN 5: ReservationView.fxml (Controller: ReservationManage)
 -- ============================================================================
--- RS1. Load danh sách đặt trước
+-- RS1. Retrieve all reservations (with Member Name, Book Title, and Available copy count)
 SELECT r.Reservation_ID, r.Member_ID, m.Full_Name AS Member_Name,
        r.Book_ID, b.Title AS Book_Title, r.Reservation_Date, r.Status,
        (SELECT COUNT(*) FROM Book_Copy bc WHERE bc.Book_ID = r.Book_ID AND bc.Status = 'Available') AS Available_Copies
@@ -293,16 +284,16 @@ JOIN Member m ON r.Member_ID = m.Member_ID
 JOIN Book b ON r.Book_ID = b.Book_ID
 ORDER BY r.Reservation_Date ASC;
 
--- RS2. Tạo đặt trước mới / Cập nhật trạng thái / Xóa đặt trước
+-- RS2. Insert new reservation / Update reservation status / Delete reservation
 INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, Status) VALUES (?, ?, ?, CURRENT_DATE, 'Pending');
 UPDATE Reservation SET Status = ? WHERE Reservation_ID = ?;
 DELETE FROM Reservation WHERE Reservation_ID = ?;
 
 
 -- ============================================================================
--- MÀN HÌNH 6: FineView.fxml (Quản lý Tiền phạt - dùng View Loan_Detail_Fine)
+-- SCREEN 6: FineView.fxml (Fine Management - powered by View Loan_Detail_Fine)
 -- ============================================================================
--- F1. Load danh sách các khoản phạt (lọc theo Payment_Status nếu cần: 'Unpaid', 'Paid', 'Waived')
+-- F1. Retrieve all overdue fine records (with days late and calculated fine amount)
 SELECT ldf.Loan_ID, ldf.Detail_ID, ldf.Member_ID, m.Full_Name AS Member_Name,
        b.Title AS Book_Title, ldf.Copy_ID, ldf.Due_Date, ldf.Return_Date,
        ldf.Days_Late, ldf.Fine_Amount, ldf.Payment_Status
@@ -312,30 +303,29 @@ JOIN Book b ON ldf.Book_ID = b.Book_ID
 WHERE ldf.Fine_Amount > 0
 ORDER BY ldf.Payment_Status DESC, ldf.Due_Date ASC;
 
--- F2. Xác nhận đóng phạt ('Paid') hoặc miễn phạt ('Waived')
+-- F2. Update fine payment status ('Paid' or 'Waived')
 UPDATE Loan_Detail
 SET Payment_Status = ?
 WHERE Loan_ID = ? AND Detail_ID = ?;
 
 
 -- ============================================================================
--- MÀN HÌNH 7: SearchView.fxml (Tìm kiếm tổng hợp - Truyền "%" + keyword + "%" cho LIKE)
+-- SCREEN 7: SearchView.fxml (Global Search - Category Filter Omitted)
 -- ============================================================================
--- S1. Tìm Sách theo Mã, Tên, ISBN, Tác giả hoặc Thể loại
-SELECT b.Book_ID, b.ISBN, b.Title, b.Publication_Year, c.Category_Name, p.Publisher_Name,
+-- S1. Search books by Book ID, Title, ISBN, or Author Name
+SELECT b.Book_ID, b.ISBN, b.Title, b.Publication_Year, p.Publisher_Name,
        GROUP_CONCAT(DISTINCT a.Author_Name ORDER BY ba.Author_Order SEPARATOR ', ') AS Authors,
        COUNT(DISTINCT CASE WHEN bc.Status = 'Available' THEN bc.Copy_ID END) AS Available_Copies
 FROM Book b
-JOIN Category c ON b.Category_ID = c.Category_ID
 JOIN Publisher p ON b.Publisher_ID = p.Publisher_ID
 LEFT JOIN Book_Author ba ON b.Book_ID = ba.Book_ID
 LEFT JOIN Author a ON ba.Author_ID = a.Author_ID
 LEFT JOIN Book_Copy bc ON b.Book_ID = bc.Book_ID
-WHERE b.Book_ID LIKE ? OR b.Title LIKE ? OR b.ISBN LIKE ? OR a.Author_Name LIKE ? OR c.Category_Name LIKE ?
-GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publication_Year, c.Category_Name, p.Publisher_Name
+WHERE b.Book_ID LIKE ? OR b.Title LIKE ? OR b.ISBN LIKE ? OR a.Author_Name LIKE ?
+GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publication_Year, p.Publisher_Name
 ORDER BY b.Title ASC;
 
--- S2. Topic Q1: Tìm các bản sao đang Available của một tựa sách
+-- S2. Topic Q1: Find all currently available physical copies of a specific book title
 SELECT bc.Book_ID, b.Title, b.ISBN, bc.Copy_ID, bc.Shelf_Location, bc.Status, bc.Condition_Notes
 FROM Book_Copy bc
 JOIN Book b ON bc.Book_ID = b.Book_ID
@@ -343,7 +333,7 @@ WHERE (b.Book_ID = ? OR b.Title LIKE ? OR b.ISBN = ?)
   AND bc.Status = 'Available'
 ORDER BY bc.Book_ID, bc.Copy_ID;
 
--- S3. Tìm Độc giả theo Mã, Họ tên, CCCD hoặc Email
+-- S3. Search members by Member ID, Full Name, Identity Card, or Email
 SELECT m.Member_ID, m.Full_Name, m.Email, m.Identity_Card, mc.Type_Name AS Category,
        mc.Borrowing_Limit, m.Membership_Expiry_Date, m.Account_Status
 FROM Member m
@@ -351,7 +341,7 @@ JOIN Member_Category mc ON m.Member_Type_ID = mc.Member_Type_ID
 WHERE m.Member_ID LIKE ? OR m.Full_Name LIKE ? OR m.Identity_Card LIKE ? OR m.Email LIKE ?
 ORDER BY m.Member_ID ASC;
 
--- S4. Topic Q2: Tra cứu sách quá hạn của một độc giả cụ thể
+-- S4. Topic Q2: List all overdue active loans of a specific member
 SELECT ldf.Loan_ID, ldf.Detail_ID, m.Member_ID, m.Full_Name AS Member_Name,
        b.Title AS Book_Title, ldf.Copy_ID, lt.Borrow_Date, ldf.Due_Date, ldf.Days_Late, ldf.Fine_Amount
 FROM Loan_Detail_Fine ldf
@@ -365,20 +355,19 @@ ORDER BY ldf.Due_Date ASC;
 
 
 -- ============================================================================
--- MÀN HÌNH 8: ReportView.fxml (Controller: ReportManage - Báo cáo & Thống kê)
+-- SCREEN 8: ReportView.fxml (Controller: ReportManage - Reports & Analytics)
 -- ============================================================================
--- RP1. Topic Q3: Top 10 tựa sách được mượn nhiều nhất trong năm nay
-SELECT b.Book_ID, b.Title, c.Category_Name, COUNT(ld.Detail_ID) AS Total_Borrows
+-- RP1. Topic Q3: Find the top 10 most borrowed book titles in the current year (Category omitted)
+SELECT b.Book_ID, b.Title, COUNT(ld.Detail_ID) AS Total_Borrows
 FROM Book b
-JOIN Category c ON b.Category_ID = c.Category_ID
 JOIN Loan_Detail ld ON b.Book_ID = ld.Book_ID
 JOIN Loan_Transaction lt ON ld.Loan_ID = lt.Loan_ID
 WHERE YEAR(lt.Borrow_Date) = YEAR(CURRENT_DATE)
-GROUP BY b.Book_ID, b.Title, c.Category_Name
+GROUP BY b.Book_ID, b.Title
 ORDER BY Total_Borrows DESC
 LIMIT 10;
 
--- RP2. Topic Q5: Tổng tiền phạt chưa thanh toán theo từng loại thành viên
+-- RP2. Topic Q5: Calculate total unpaid fines outstanding per member category
 SELECT mc.Member_Type_ID, mc.Type_Name,
        COUNT(ldf.Detail_ID) AS Unpaid_Count,
        COALESCE(SUM(ldf.Fine_Amount), 0) AS Total_Outstanding_Fines
@@ -388,7 +377,7 @@ LEFT JOIN Loan_Detail_Fine ldf ON m.Member_ID = ldf.Member_ID AND ldf.Payment_St
 GROUP BY mc.Member_Type_ID, mc.Type_Name
 ORDER BY Total_Outstanding_Fines DESC;
 
--- RP3. Topic Q4 (Relational Division): Độc giả đã mượn tất cả tựa sách của 1 tác giả
+-- RP3. Topic Q4 (Relational Division): Find members who have borrowed every title by a given author
 SELECT m.Member_ID, m.Full_Name, mc.Type_Name
 FROM Member m
 JOIN Member_Category mc ON m.Member_Type_ID = mc.Member_Type_ID
@@ -405,7 +394,7 @@ AND NOT EXISTS (
       )
 );
 
--- RP4. Thống kê lượt mượn theo từng tháng trong năm
+-- RP4. Monthly borrowing statistics (total transactions and borrowed copies per month in the current year)
 SELECT MONTH(lt.Borrow_Date) AS Borrow_Month,
        COUNT(DISTINCT lt.Loan_ID) AS Total_Transactions,
        COUNT(ld.Detail_ID) AS Total_Copies_Borrowed

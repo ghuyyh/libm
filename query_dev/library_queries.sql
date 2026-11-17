@@ -190,6 +190,70 @@ INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes
 UPDATE Book_Copy SET Shelf_Location = ?, Status = ?, Condition_Notes = ? WHERE Book_ID = ? AND Copy_ID = ?;
 DELETE FROM Book_Copy WHERE Book_ID = ? AND Copy_ID = ?;
 
+-- B5. Book Author Management (Safe Reordering & Deletion on `Book_Author` and `Author`)
+
+-- 1. Retrieve all authors of a selected book ordered by Author_Order
+SELECT ba.Book_ID, ba.Author_ID, a.Author_Name, ba.Author_Order
+FROM Book_Author ba
+JOIN Author a ON ba.Author_ID = a.Author_ID
+WHERE ba.Book_ID = ?
+ORDER BY ba.Author_Order ASC;
+
+-- 2. Link an existing Author to a Book (automatically appends to the end of Author_Order)
+INSERT INTO Book_Author (Book_ID, Author_ID, Author_Order)
+SELECT ?, ?, COALESCE(MAX(Author_Order), 0) + 1
+FROM Book_Author
+WHERE Book_ID = ?;
+
+-- 3. Move Up (Safe 3-step swap using temp slot 9999 + boundary guard Author_Order > 1)
+-- Execute all 3 statements in ONE JDBC transaction.
+-- IMPORTANT: Check rowsAffected = ps1.executeUpdate(); if 0 (already #1), abort/return immediately!
+UPDATE Book_Author
+SET Author_Order = 9999
+WHERE Book_ID = ? AND Author_ID = ? AND Author_Order = ? AND Author_Order > 1;
+
+UPDATE Book_Author
+SET Author_Order = ?          -- Pass: currentOrder
+WHERE Book_ID = ? AND Author_Order = ?; -- Pass: Book_ID, currentOrder - 1
+
+UPDATE Book_Author
+SET Author_Order = ?          -- Pass: currentOrder - 1
+WHERE Book_ID = ? AND Author_ID = ? AND Author_Order = 9999;
+
+-- 4. Move Down (Safe 3-step swap using temp slot 9999 + boundary guard Author_Order < MAX)
+-- Execute all 3 statements in ONE JDBC transaction.
+-- IMPORTANT: Check rowsAffected = ps1.executeUpdate(); if 0 (already last), abort/return immediately!
+UPDATE Book_Author ba
+JOIN (SELECT MAX(Author_Order) AS max_ord FROM Book_Author WHERE Book_ID = ?) m
+SET ba.Author_Order = 9999
+WHERE ba.Book_ID = ?
+  AND ba.Author_ID = ?
+  AND ba.Author_Order = ?
+  AND ba.Author_Order < m.max_ord;
+
+UPDATE Book_Author
+SET Author_Order = ?          -- Pass: currentOrder
+WHERE Book_ID = ? AND Author_Order = ?; -- Pass: Book_ID, currentOrder + 1
+
+UPDATE Book_Author
+SET Author_Order = ?          -- Pass: currentOrder + 1
+WHERE Book_ID = ? AND Author_ID = ? AND Author_Order = 9999;
+
+-- 5. Remove an Author from a Book and compact remaining Author_Order values (1, 2, 3...)
+-- Execute both statements in ONE JDBC transaction.
+DELETE FROM Book_Author
+WHERE Book_ID = ? AND Author_ID = ?;
+
+UPDATE Book_Author
+SET Author_Order = Author_Order - 1
+WHERE Book_ID = ?
+  AND Author_Order > ?        -- Pass: deletedAuthorOrder
+ORDER BY Author_Order ASC;    -- ORDER BY prevents UNIQUE constraint collision during shift
+
+-- 6. Delete an Author completely from master `Author` table
+-- Note: Blocked by FK (ON DELETE RESTRICT) if the author is still assigned to any book in `Book_Author`.
+DELETE FROM Author
+WHERE Author_ID = ?;
 
 -- ============================================================================
 -- SCREEN 3: MemberView.fxml (Controller: MemberManage)

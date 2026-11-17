@@ -8,7 +8,8 @@ Please use **Java JDK version: 25.0.3 or above**.
     + `db.user`: Database username
     + `db.password`: Database user password
 2. If using VSCode, press `Ctrl` + `Shift` + `P` then find and choose `Java: Configure Java Runtime` -> choose **JavaSE 25** or above then `Apply Settings`
-3. ...
+3. When running, if it ask for select Package to start -> choose `App.java`.  
+    ![alt text](select.png)
 
 ## 2. Git and GitHub contribution tutorial (for members)
 

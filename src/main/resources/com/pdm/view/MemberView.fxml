@@ -22,7 +22,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane fx:id="mainpane" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pdm.controller.MemberManage">
+<BorderPane fx:id="mainpane" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pdm.controller.MemberManage">
    <top>
       <AnchorPane prefHeight="0.0" prefWidth="709.0" style="-fx-background-color: #ffffff;" stylesheets="@style.css" BorderPane.alignment="CENTER">
          <children>
@@ -87,7 +87,7 @@
    <bottom>
       <VBox spacing="4.0" BorderPane.alignment="CENTER">
          <children>
-            <TitledPane animated="false" text="Member details">
+            <TitledPane expanded="false" text="Member details">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="210.0" prefWidth="200.0">
                      <children>
@@ -135,7 +135,7 @@
                   </AnchorPane>
               </content>
             </TitledPane>
-            <TitledPane animated="false" expanded="true" text="Overdue loans today (selected member)">
+            <TitledPane expanded="false" text="Overdue loans today (selected member)">
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="170.0" prefWidth="200.0">
                      <children>

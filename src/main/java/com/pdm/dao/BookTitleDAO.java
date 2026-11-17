@@ -94,7 +94,7 @@ public class BookTitleDAO {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return null;
+        return "B01";
     }
 
     public List<BookTitle> get_top10_borrowed_thisyear(String title) {
@@ -227,6 +227,51 @@ public class BookTitleDAO {
         }
     }
 
+    public boolean addPublisher(String publisherName, String address, String contactEmail) {
+        String publisherID = generatePublisherID();
+        String sql = "INSERT INTO Publisher (Publisher_ID, Publisher_Name, Address, Contact_Email) VALUES (?, ?, ?, ?);";
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setString(1, publisherID);
+            ps.setString(2, publisherName);
+            ps.setString(3, address);
+            if (contactEmail == null || contactEmail.isEmpty()) {
+                ps.setNull(4, java.sql.Types.VARCHAR);
+            } else {
+                ps.setString(4, contactEmail);
+            }
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    private String generatePublisherID() {
+        String sql = """
+                SELECT Publisher_ID
+                FROM Publisher
+                ORDER BY CAST(SUBSTRING(Publisher_ID, 4) AS UNSIGNED) DESC
+                LIMIT 1;
+                """;
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();) {
+            if (rs.next()) {
+                String lastPublisherID = rs.getString("Publisher_ID");
+                int lastNumber = Integer.parseInt(lastPublisherID.substring(3));
+                int newNumber = lastNumber + 1;
+                return "PUB" + newNumber;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return "PUB01";
+    }
+
     // AI generated
     public String BookDeleteChecker(String bookId) {
         String SQL = "SELECT (SELECT COUNT(*) FROM Book WHERE Book_ID = ?) AS title_exists, "
@@ -266,4 +311,5 @@ public class BookTitleDAO {
         }
         return null;
     }
+
 }

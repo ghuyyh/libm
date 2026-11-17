@@ -1,6 +1,7 @@
 package com.pdm.controller;
 
 import java.time.Year;
+import java.util.List;
 import java.util.Optional;
 
 import com.pdm.dao.AuthorDAO;
@@ -11,17 +12,22 @@ import com.pdm.model.BookCopy;
 import com.pdm.model.BookTitle;
 import com.pdm.model.Publisher;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.StringConverter;
 
 //manage book
 public class TitleCopyManage extends basecontrol {
@@ -70,6 +76,14 @@ public class TitleCopyManage extends basecontrol {
     @FXML
     private TextField publisherid_field;
 
+    // addcopy
+    @FXML
+    private TextField shelf_field;
+    @FXML
+    private ChoiceBox<String> copy_status_choice;
+    @FXML
+    private TextField copy_note_field;
+
     // update title
     @FXML
     private TextField u_isbn_field;
@@ -92,10 +106,30 @@ public class TitleCopyManage extends basecontrol {
     @FXML
     private TableColumn<Publisher, String> col_email;
 
+    // add publisher
+    @FXML
+    private TextField publisher_name_field;
+    @FXML
+    private TextField publisher_address_field;
+    @FXML
+    private TextField publisher_email_field;
+
+    // combobox
+    @FXML
+    private ComboBox<Author> author_field;
+    @FXML
+    private TextField author_name_field;
+    @FXML
+    private TextField author_bio_field;
+    private ObservableList<Author> allAuthors = FXCollections.observableArrayList();;
+    private FilteredList<Author> filteredAuthors;
+
     @FXML
     private Label title_count;
     @FXML
     private CheckBox show_available_copies_checkbox;
+    @FXML
+    private CheckBox use_exist_author_checkbox;
     @FXML
     private TextField search_field;
 
@@ -139,7 +173,17 @@ public class TitleCopyManage extends basecontrol {
         refreshBookTable();
         refreshPublisherTable();
         allbook.setAll(bookList);
+        // tong so sach
         title_count.setText(bookList.size() + " Titles");
+        // choicebox copy status
+        copy_status_choice
+                .setItems(FXCollections.observableArrayList("Available", "Borrowed", "Reserved", "Damaged", "Lost"));
+        copy_status_choice.setValue("Available");
+        List<Author> authors = authorDAO.get_all_auth();
+        // combobox
+        allAuthors = FXCollections.observableArrayList(authors);
+        filteredAuthors = new FilteredList<>(allAuthors, p -> true);
+        author_field.setItems(filteredAuthors);
 
         book_table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
@@ -165,6 +209,51 @@ public class TitleCopyManage extends basecontrol {
                 title_count.setText(bookList.size() + " Titles");
             }
 
+        });
+
+        author_field.setConverter(new StringConverter<Author>() {
+            @Override
+            public String toString(Author author) {
+                if (author == null)
+                    return "";
+                return author.getAuthor_ID() + " - " + author.getAuthor_Name();
+            }
+
+            @Override
+            public Author fromString(String string) {
+                if (string == null || string.isBlank())
+                    return null;
+                String value = string.trim();
+                for (Author author : allAuthors) {
+                    if (toString(author).equalsIgnoreCase(value) || author.getAuthor_ID().equalsIgnoreCase(value)) {
+                        return author;
+                    }
+                }
+                return null;
+            }
+        });
+
+        author_field.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
+            Platform.runLater(() -> {
+                if (!newValue.equals(author_field.getEditor().getText()))
+                    return;
+
+                Author selectedAuthor = author_field.getValue();
+                if (selectedAuthor != null
+                        && author_field.getConverter().toString(selectedAuthor).equalsIgnoreCase(newValue.trim()))
+                    return;
+
+                if (newValue.isBlank()) {
+                    filteredAuthors.setPredicate(author -> true);
+                } else {
+                    String keyword = newValue.toLowerCase().trim();
+                    filteredAuthors.setPredicate(author -> author.getAuthor_ID().toLowerCase().contains(keyword)
+                            || author.getAuthor_Name().toLowerCase().contains(keyword));
+                }
+
+                if (!newValue.isBlank() && !author_field.isShowing())
+                    author_field.show();
+            });
         });
 
     }
@@ -394,8 +483,140 @@ public class TitleCopyManage extends basecontrol {
     }
 
     @FXML
+    private void addCopy() {
+        BookTitle selectedBook = book_table.getSelectionModel().getSelectedItem();
+        if (selectedBook == null) {
+            showError("Please select a book title to add a copy.");
+            return;
+        }
+        if (shelf_field.getText().isEmpty() || shelf_field.getText().length() > 100) {
+            showError("Shelf location cannot be empty and must be less than 100 characters.");
+            return;
+        }
+
+        bookCopyDAO.addCopy(
+                selectedBook.getBookID(),
+                shelf_field.getText(),
+                copy_status_choice.getValue(),
+                copy_note_field.getText());
+        refreshCopyTable(selectedBook.getBookID());
+
+    }
+
+    @FXML
+    private void deleteCopy() {
+        BookCopy selectedCopy = copy_table.getSelectionModel().getSelectedItem();
+        if (selectedCopy == null) {
+            showError("Select a copy first.");
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setContentText("Sure to delete this selected copy?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            System.out.println("ok delete");
+        } else {
+            System.out.println("not delete");
+            return;
+        }
+        String error = bookCopyDAO.CopyDeleteChecker(selectedCopy.getBook_ID(), selectedCopy.getCopy_ID());
+        if (error != null) {
+            showError(error + ", cannot delete copy.");
+            return;
+        }
+
+        boolean success = bookCopyDAO.deleteCopy(selectedCopy.getBook_ID(), selectedCopy.getCopy_ID());
+        if (success) {
+            BookTitle selectedBook = book_table.getSelectionModel().getSelectedItem();
+            if (selectedBook != null) {
+                refreshCopyTable(selectedBook.getBookID());
+            }
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("Copy deleted successfully.");
+            alert.show();
+        } else {
+            showError("cannot delete copy. It may have loan history or be on loan.");
+        }
+    }
+
+    @FXML
     private void addPublisher() {
-        // to add a publisher
+
+        if (publisher_name_field.getText().isEmpty() || publisher_name_field.getText().length() > 150) {
+            showError("Publisher name cannot be empty and must be less than 150 characters.");
+            return;
+        }
+        String publisherName = publisher_name_field.getText();
+        if (publisher_address_field.getText().length() > 255) {
+            showError("Address must be less than 255 characters.");
+            return;
+        }
+        String address = publisher_address_field.getText();
+        if (publisher_email_field.getText().length() > 100) {
+            showError("Contact email must be less than 100 characters.");
+            return;
+        }
+        if (!publisher_email_field.getText().isEmpty() && !publisher_email_field.getText().matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+            showError("Please enter a valid contact email.");
+            return;
+        }
+        String contactEmail = publisher_email_field.getText();
+        if (!bookTitleDAO.addPublisher(publisherName, address, contactEmail)) {
+            showError("Failed to add publisher. The name or contact email may already exist.");
+            return;
+        }
+
+        refreshPublisherTable();
+        publisher_name_field.clear();
+        publisher_address_field.clear();
+        publisher_email_field.clear();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText("Publisher added successfully.");
+        alert.show();
+    }
+
+    @FXML
+    private void addAuthorToBook() {
+        BookTitle selectedBook = book_table.getSelectionModel().getSelectedItem();
+        if (selectedBook == null) {
+            showError("Please select a book title to add an author.");
+            return;
+        }
+
+        String authorID;
+        if (use_exist_author_checkbox.isSelected()) {
+            Author selectedAuthor = author_field.getValue();
+            if (selectedAuthor == null) {
+                showError("Please select an existing author.");
+                return;
+            }
+            authorID = selectedAuthor.getAuthor_ID();
+        } else {
+            String authorName = author_name_field.getText().trim();
+            String biography = author_bio_field.getText().trim();
+            if (authorName.isEmpty() || authorName.length() > 150) {
+                showError("Author name cannot be empty and must be less than 150 characters.");
+                return;
+            }
+
+            authorID = authorDAO.generateAuthorID();
+            if (!authorDAO.addAuthor(authorName, biography)) {
+                showError("Failed to add author.");
+                return;
+            }
+        }
+
+        if (!authorDAO.addAuthorToBook(selectedBook.getBookID(), authorID)) {
+            showError("Failed to add author to book.");
+            return;
+        }
+
+        refreshAuthorTable(selectedBook.getBookID());
+        allAuthors.setAll(authorDAO.get_all_auth());
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText("Author add to book successfully.");
+        alert.show();
     }
 
     @FXML

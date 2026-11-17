@@ -121,4 +121,83 @@ public class AuthorDAO {
         }
         return list;
     }
+
+    public boolean addAuthor(String authorName, String biography) {
+        String authorID = generateAuthorID();
+        String sql = "INSERT INTO Author (Author_ID, Author_Name, Biography) VALUES (?, ?, ?);";
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setString(1, authorID);
+            ps.setString(2, authorName);
+            ps.setString(3, biography);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+
+    }
+
+    public boolean addAuthorToBook(String bookID, String authorID) {
+        String sql = """
+                INSERT INTO Book_Author (Book_ID, Author_ID, Author_Order)
+                VALUES (?, ?, ?);
+        """;
+
+        int authorOrder = generateAuthorOrder(bookID);
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setString(1, bookID);
+            ps.setString(2, authorID);
+            ps.setInt(3, authorOrder);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+
+
+    public int generateAuthorOrder(String bookID) {
+        String sql = "SELECT MAX(Author_Order) AS max_order FROM Book_Author WHERE Book_ID = ?";
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setString(1, bookID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int maxOrder = rs.getInt("max_order");
+                    return maxOrder + 1; 
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return 1; 
+    }
+
+    public String generateAuthorID() {
+        String sql = "SELECT Author_ID FROM Author ORDER BY Author_ID DESC LIMIT 1";
+        String newAuthorID = "A001";
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String lastID = rs.getString("Author_ID");
+                    int lastNumber = Integer.parseInt(lastID.substring(4));
+                    int newNumber = lastNumber + 1;
+                    return "AUTH" + newNumber;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return newAuthorID;
+    }
 }

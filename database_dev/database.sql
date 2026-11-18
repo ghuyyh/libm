@@ -656,21 +656,22 @@ INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, S
 ('RES06', 'M13', 'B10', '2026-07-20', 'Cancelled'),  -- On the Origin of Species: only copy out on loan L10
 ('RES07', 'M02', 'B03', '2026-09-02', 'Confirmed'),  -- Clean Code: both copies were out; C01 came back on 2026-09-04 and is kept at the desk for M02
 ('RES08', 'M12', 'B02', '2026-09-03', 'Cancelled'),  -- Algorithms Unlocked: both copies were out; C01 came back on 2026-09-06, but M12 never picked it up
--- October: members still waiting
-('RES09', 'M05', 'B06', '2026-10-05', 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
+--  members still waiting
+('RES09', 'M05', 'B06', CURRENT_DATE - INTERVAL 4 DAY, 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
 ('RES10', 'M06', 'B12', '2026-10-06', 'Pending'),    -- Hamlet: only copy out on loan L11; 1st in the queue
 ('RES11', 'M03', 'B03', '2026-10-09', 'Pending'),    -- Clean Code: C01 kept for RES07, C02 out on loan L03; next after RES07
 ('RES12', 'M08', 'B13', '2026-10-12', 'Pending'),    -- Pride and Prejudice: only copy out on loan L15; 1st in the queue
 ('RES13', 'M12', 'B12', '2026-10-12', 'Pending'),    -- Hamlet: 2nd in the queue, after RES10
-('RES14', 'M04', 'B06', '2026-10-14', 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
+('RES14', 'M04', 'B06', CURRENT_DATE - INTERVAL 1 DAY, 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
 ('RES15', 'M11', 'B13', '2026-10-18', 'Pending');    -- Pride and Prejudice: 2nd in the queue, after RES12
  
 -- Loan_Detail (18 rows)
 -- The fine of a line is not stored: the view Loan_Detail_Fine computes it
 -- (5,000 VND per day late). Payment_Status says whether that fine is
 -- Unpaid, Paid or Waived, and is 'None' for a copy returned on time.
--- Copies still out (Return_Date NULL) were already overdue when this data was
--- entered, so they are marked 'Unpaid'; L15 was not due yet, so it is 'None'.
+-- Copies still out (Return_Date NULL): lines already past their due date
+-- (L03, L11, L15) are 'Unpaid'; lines not yet due (L06, L09, L18, L19,
+-- dates relative to CURRENT_DATE) are 'None'.
  
 INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status) VALUES
 ('L01', 'D01', 'B01', 'C01', '2026-01-24', 0, 'None'),
@@ -681,16 +682,16 @@ INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Rene
 ('L03', 'D02', 'B03', 'C02', NULL,         0, 'Unpaid'),
 ('L04', 'D01', 'B04', 'C01', '2026-04-02', 0, 'Unpaid'),   -- 8 days late: 40,000 VND
 ('L05', 'D01', 'B05', 'C01', '2026-04-30', 0, 'Unpaid'),   -- 8 days late: 40,000 VND
-('L06', 'D01', 'B06', 'C02', NULL,         0, 'Unpaid'),
+('L06', 'D01', 'B06', 'C02', NULL,         0, 'None'),
 ('L07', 'D01', 'B07', 'C01', '2026-06-03', 0, 'None'),
 ('L08', 'D01', 'B08', 'C01', '2026-07-13', 0, 'Unpaid'),   -- 10 days late: 50,000 VND
-('L09', 'D01', 'B09', 'C02', NULL,         0, 'Unpaid'),
+('L09', 'D01', 'B09', 'C02', NULL,         0, 'None'),
 ('L10', 'D01', 'B10', 'C01', '2026-07-30', 0, 'Paid'),     -- 5 days late: 25,000 VND
 ('L11', 'D01', 'B12', 'C01', NULL,         0, 'Unpaid'),
 ('L12', 'D01', 'B01', 'C01', '2026-09-10', 1, 'None'),     -- renewed once, returned on the due date
 ('L13', 'D01', 'B02', 'C01', '2026-09-06', 0, 'Waived'),   -- 5 days late: 25,000 VND, waived
 ('L14', 'D01', 'B03', 'C01', '2026-09-04', 0, 'None'),
-('L15', 'D01', 'B13', 'C01', NULL,         0, 'None'),
+('L15', 'D01', 'B13', 'C01', NULL,         0, 'Unpaid'),
 ('L18', 'D01', 'B10', 'C01', NULL,         0, 'None'),   -- not overdue
 ('L19', 'D01', 'B11', 'C01', NULL,         0, 'None');   -- not overdue
  

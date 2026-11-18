@@ -16,8 +16,8 @@ public class AuthorDAO {
         String sql = """
                 select a.Author_ID, a.Author_Name, a.Biography, ba.Author_Order
                 from Book_Author ba join Author a on ba.Author_ID = a.Author_ID
-                where ba.Book_ID = ?
-                """;
+                where ba.Book_ID = ? order by ba.Author_Order
+                    """;
         List<Author> list = new ArrayList<>();
         try (
                 Connection conn = dbconnect.getConnection();
@@ -35,12 +35,12 @@ public class AuthorDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         return list;
     }
 
-    public List<Author> get_auth(String auth_id) {
+    public List<Author> get_auth(String auth_id) {// no author order
         String sql = "select Author_ID, Author_Name, Biography, from Author where Author_ID = ?";
         List<Author> list = new ArrayList<>();
         try (
@@ -194,7 +194,7 @@ public class AuthorDAO {
             } catch (SQLException e) {
                 conn.rollback();
                 System.out.println(e.getMessage());
-               return false;
+                return false;
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -218,6 +218,123 @@ public class AuthorDAO {
             System.out.println(e.getMessage());
         }
         return 1;
+    }
+
+    public boolean moveUp(String bookID, String authorID, int authorOrder) {
+        String movetemp = """
+                UPDATE Book_Author
+                SET Author_Order = 9999
+                WHERE Book_ID = ? AND Author_ID = ? AND Author_Order = ? AND Author_Order > 1;
+                """;
+        String moveprevsql = """
+                UPDATE Book_Author
+                SET Author_Order = ?
+                WHERE Book_ID = ? AND Author_Order = ?;
+                """;
+        String movecurrsql = """
+                UPDATE Book_Author
+                SET Author_Order = ?
+                WHERE Book_ID = ? AND Author_ID = ? AND Author_Order = 9999;
+                """;
+
+        try (Connection conn = dbconnect.getConnection();
+                PreparedStatement moveToTempPs = conn.prepareStatement(movetemp);
+                PreparedStatement movePreviousAuthorPs = conn.prepareStatement(moveprevsql);
+                PreparedStatement moveCurrentAuthorPs = conn.prepareStatement(movecurrsql)) {
+            try {
+                conn.setAutoCommit(false);
+
+                moveToTempPs.setString(1, bookID);
+                moveToTempPs.setString(2, authorID);
+                moveToTempPs.setInt(3, authorOrder);
+                int rowsAffected = moveToTempPs.executeUpdate();
+                if (rowsAffected == 0) {
+                    conn.rollback();
+                    return false;
+                }
+
+                movePreviousAuthorPs.setInt(1, authorOrder);
+                movePreviousAuthorPs.setString(2, bookID);
+                movePreviousAuthorPs.setInt(3, authorOrder - 1);
+                movePreviousAuthorPs.executeUpdate();
+
+                moveCurrentAuthorPs.setInt(1, authorOrder - 1);
+                moveCurrentAuthorPs.setString(2, bookID);
+                moveCurrentAuthorPs.setString(3, authorID);
+                moveCurrentAuthorPs.executeUpdate();
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.out.println(e.getMessage());
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean moveDown(String bookID, String authorID, int authorOrder) {
+        String movetemp = """
+                UPDATE Book_Author ba
+                JOIN (SELECT MAX(Author_Order) AS max_ord FROM Book_Author WHERE Book_ID = ?) m
+                SET ba.Author_Order = 9999
+                WHERE ba.Book_ID = ?
+                  AND ba.Author_ID = ?
+                  AND ba.Author_Order = ?
+                  AND ba.Author_Order < m.max_ord;
+                """;
+        String movenextsql = """
+                UPDATE Book_Author
+                SET Author_Order = ?
+                WHERE Book_ID = ? AND Author_Order = ?;
+                """;
+        String movecurrsql = """
+                UPDATE Book_Author
+                SET Author_Order = ?
+                WHERE Book_ID = ? AND Author_ID = ? AND Author_Order = 9999;
+                """;
+
+        try (Connection conn = dbconnect.getConnection();
+                PreparedStatement moveToTempPs = conn.prepareStatement(movetemp);
+                PreparedStatement moveNextAuthorPs = conn.prepareStatement(movenextsql);
+                PreparedStatement moveCurrentAuthorPs = conn.prepareStatement(movecurrsql)) {
+            try {
+                conn.setAutoCommit(false);
+
+                moveToTempPs.setString(1, bookID);
+                moveToTempPs.setString(2, bookID);
+                moveToTempPs.setString(3, authorID);
+                moveToTempPs.setInt(4, authorOrder);
+                int rowsAffected = moveToTempPs.executeUpdate();
+                if (rowsAffected == 0) {
+                    conn.rollback();
+                    return false;
+                }
+
+                moveNextAuthorPs.setInt(1, authorOrder);
+                moveNextAuthorPs.setString(2, bookID);
+                moveNextAuthorPs.setInt(3, authorOrder + 1);
+                moveNextAuthorPs.executeUpdate();
+
+                moveCurrentAuthorPs.setInt(1, authorOrder + 1);
+                moveCurrentAuthorPs.setString(2, bookID);
+                moveCurrentAuthorPs.setString(3, authorID);
+                moveCurrentAuthorPs.executeUpdate();
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.out.println(e.getMessage());
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
     }
 
     public String generateAuthorID() {

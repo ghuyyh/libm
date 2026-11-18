@@ -199,7 +199,7 @@ public class TitleCopyManage extends basecontrol {
             }
         });
 
-        search_field.setOnAction(event -> { //search book
+        search_field.setOnAction(event -> { // search book
             System.out.println("search:" + search_field.getText());
             String searchText = search_field.getText();
             if (searchText.isEmpty()) {
@@ -557,7 +557,8 @@ public class TitleCopyManage extends basecontrol {
             showError("Contact email must be less than 100 characters.");
             return;
         }
-        if (!publisher_email_field.getText().isEmpty() && !publisher_email_field.getText().matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+        if (!publisher_email_field.getText().isEmpty()
+                && !publisher_email_field.getText().matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
             showError("Please enter a valid contact email.");
             return;
         }
@@ -617,6 +618,74 @@ public class TitleCopyManage extends basecontrol {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText("Author add to book successfully.");
         alert.show();
+    }
+
+    @FXML
+    public void removeAuthorFromBook() {
+        BookTitle selectedBook = book_table.getSelectionModel().getSelectedItem();
+        Author selectedAuthor = auth_table.getSelectionModel().getSelectedItem();
+        if (selectedBook == null || selectedAuthor == null) {
+            showError("Please select a book title and an author to unassign.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setContentText("Are you sure you want to remove this author from the selected book?");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            if (!authorDAO.removeAuthorFromBook(selectedBook.getBookID(), selectedAuthor.getAuthor_ID(),
+                    selectedAuthor.getAuthor_Order())) {
+                showError("Failed to remove author from book.");
+                return;
+            }
+            refreshAuthorTable(selectedBook.getBookID());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("Author removed from book successfully.");
+            alert.show();
+        }
+    }
+
+    @FXML
+    public void moveUpAuthor() {
+
+        BookTitle selectedBook = book_table.getSelectionModel().getSelectedItem();
+        Author selectedAuthor = auth_table.getSelectionModel().getSelectedItem();
+        if (selectedBook == null || selectedAuthor == null) {
+            showError("Please select a book title and an author to move up.");
+            return;
+        }
+        if (selectedAuthor.getAuthor_Order() == 1) {
+            showError("Cannot move, it is at the top.");
+            return;
+        }
+
+        if (!authorDAO.moveUp(selectedBook.getBookID(), selectedAuthor.getAuthor_ID(),
+                selectedAuthor.getAuthor_Order())) {
+            showError("Failed to move author up in the order.");
+            return;
+        }
+        refreshAuthorTable(selectedBook.getBookID());
+    }
+
+    @FXML
+    public void moveDownAuthor() {
+        BookTitle selectedBook = book_table.getSelectionModel().getSelectedItem();
+        Author selectedAuthor = auth_table.getSelectionModel().getSelectedItem();
+        if (selectedBook == null || selectedAuthor == null) {
+            showError("Please select a book title and an author to move down.");
+            return;
+        }
+        if (selectedAuthor.getAuthor_Order() == authList.size()) {
+            showError("Cannot move, it is at the bottom.");
+            return;
+        }
+
+        if (!authorDAO.moveDown(selectedBook.getBookID(), selectedAuthor.getAuthor_ID(),
+                selectedAuthor.getAuthor_Order())) {
+            showError("Failed to move author down in the order.");
+            return;
+        }
+        refreshAuthorTable(selectedBook.getBookID());
     }
 
     @FXML

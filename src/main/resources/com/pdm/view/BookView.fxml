@@ -128,9 +128,9 @@
                            </children>
                         </GridPane>
                         <Button fx:id="add_author_book_btn" layoutX="913.0" layoutY="98.0" mnemonicParsing="false" onAction="#addAuthorToBook" text="Add author to title" />
-                        <Button fx:id="move_up_btn" layoutX="665.0" layoutY="98.0" mnemonicParsing="false" opacity="0.0" prefHeight="25.0" prefWidth="81.0" text="Move up" />
-                        <Button fx:id="move_down_btn" layoutX="665.0" layoutY="123.0" mnemonicParsing="false" opacity="0.0" text="Move Down" />
-                        <Button fx:id="remove_btn" layoutX="665.0" layoutY="148.0" mnemonicParsing="false" opacity="0.0" prefHeight="25.0" prefWidth="81.0" text="Remove" />
+                        <Button fx:id="move_up_btn" layoutX="665.0" layoutY="98.0" mnemonicParsing="false" onAction="#moveUpAuthor" prefHeight="25.0" prefWidth="81.0" text="Move up" />
+                        <Button fx:id="move_down_btn" layoutX="665.0" layoutY="123.0" mnemonicParsing="false" onAction="#moveDownAuthor" text="Move Down" />
+                        <Button layoutX="665.0" layoutY="148.0" mnemonicParsing="false" onAction="#removeAuthorFromBook" prefHeight="25.0" prefWidth="81.0" text="Remove" />
                      </children>
                   </AnchorPane>
                </content></Tab>

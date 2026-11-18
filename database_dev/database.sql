@@ -399,7 +399,11 @@ SELECT ld.Loan_ID,
        ld.Return_Date,
        GREATEST(DATEDIFF(COALESCE(ld.Return_Date, CURRENT_DATE), lt.Due_Date), 0) AS Days_Late,
        GREATEST(DATEDIFF(COALESCE(ld.Return_Date, CURRENT_DATE), lt.Due_Date), 0) * 5000.00 AS Fine_Amount,
-       ld.Payment_Status
+       ld.Payment_Status,       CASE
+           WHEN ld.Return_Date IS NOT NULL THEN 'Returned'
+           WHEN lt.Due_Date < CURRENT_DATE THEN 'Overdue'
+           ELSE 'Not overdue'
+       END AS Loan_Status
 FROM Loan_Detail ld
 INNER JOIN Loan_Transaction lt
     ON lt.Loan_ID = ld.Loan_ID;
@@ -597,7 +601,9 @@ INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Dat
 ('L12', 'M10', 'S06', '2026-08-01', '2026-09-10'),  -- 20 days, renewed once for 20 more
 ('L13', 'M11', 'S07', '2026-08-18', '2026-09-01'),
 ('L14', 'M12', 'S08', '2026-08-22', '2026-09-05'),
-('L15', 'M13', 'S09', '2026-10-10', '2026-10-30');
+('L15', 'M13', 'S09', '2026-10-10', '2026-10-30'),
+('L18', 'M05', 'S07', CURRENT_DATE - INTERVAL 5 DAY, CURRENT_DATE + INTERVAL 15 DAY),  -- MC04: 20 days
+('L19', 'M08', 'S08', CURRENT_DATE - INTERVAL 2 DAY, CURRENT_DATE + INTERVAL 13 DAY);  -- MC02: 15 days
  
 -- Book_Copy (21 rows)
 -- Condition_Notes record only the physical state of a copy, on one scale:
@@ -624,8 +630,8 @@ INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes
 ('B08', 'C01', 'Shelf D - Row 2', 'Available', 'Good'),
 ('B09', 'C01', 'Shelf E - Row 1', 'Available', 'Good'),   -- never lent, so B09 was never fully on loan
 ('B09', 'C02', 'Shelf E - Row 1', 'Borrowed',  'Good'),   -- out on loan L09
-('B10', 'C01', 'Shelf E - Row 2', 'Available', 'Fair: cover slightly worn'),
-('B11', 'C01', 'Shelf F - Row 1', 'Available', 'Good'),
+('B10', 'C01', 'Shelf E - Row 2', 'Borrowed',  'Fair: cover slightly worn'),   -- out on loan L18
+('B11', 'C01', 'Shelf F - Row 1', 'Borrowed',  'Good'),                        -- out on loan L19
 ('B12', 'C01', 'Shelf F - Row 2', 'Borrowed',  'Good'),   -- out on loan L11
 ('B13', 'C01', 'Shelf F - Row 3', 'Borrowed',  'Good'),   -- out on loan L15
 ('B14', 'C01', 'Shelf G - Row 1', 'Available', 'New'),    -- never lent
@@ -685,7 +691,9 @@ INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Rene
 ('L12', 'D01', 'B01', 'C01', '2026-09-10', 1, 'None'),     -- renewed once, returned on the due date
 ('L13', 'D01', 'B02', 'C01', '2026-09-06', 0, 'Waived'),   -- 5 days late: 25,000 VND, waived
 ('L14', 'D01', 'B03', 'C01', '2026-09-04', 0, 'None'),
-('L15', 'D01', 'B13', 'C01', NULL,         0, 'None');
+('L15', 'D01', 'B13', 'C01', NULL,         0, 'None'),
+('L18', 'D01', 'B10', 'C01', NULL,         0, 'None'),   -- not overdue
+('L19', 'D01', 'B11', 'C01', NULL,         0, 'None');   -- not overdue
  
  
  

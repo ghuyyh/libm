@@ -135,11 +135,7 @@ only refuse a new loan to a member who already holds the maximum. Trigger 2 runs
 for every copy added, so the limit holds however many copies a loan has and
 whether they are added to a new or an existing loan.
 
-
-
-
-
-  ##5. Transactions 
+5. Transactions and Their Purpose
 
 Transaction	Ending	Steps	Tables Changed	Purpose
 T1: Atomic book checkout	COMMIT	1) Create loan slip L17 for member M04.

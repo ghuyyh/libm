@@ -585,17 +585,16 @@ INSERT INTO Staff (Staff_ID, Supervisor_ID, Full_Name, Position, Email) VALUES
 -- member's category, and most loans below use that full period (MC01 10 days,
 -- MC02 15, MC03 and MC04 20, MC05 18, MC08 7). L13 and L14 are shorter loans.
 -- L12 was renewed once, which adds one more period (Renewal_Count in Loan_Detail).
- 
 INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date) VALUES
 ('L01', 'M01', 'S05', '2026-01-15', '2026-01-25'),
 ('L02', 'M02', 'S05', '2026-02-10', '2026-02-25'),
 ('L03', 'M01', 'S06', '2026-09-01', '2026-09-11'),
 ('L04', 'M03', 'S06', '2026-03-05', '2026-03-25'),
 ('L05', 'M04', 'S07', '2026-04-12', '2026-04-22'),
-('L06', 'M01', 'S07', '2026-09-10', '2026-09-20'),
+('L06', 'M01', 'S07', CURRENT_DATE - INTERVAL 5 DAY, CURRENT_DATE + INTERVAL 5 DAY),   -- not due yet
 ('L07', 'M05', 'S08', '2026-05-20', '2026-06-09'),
 ('L08', 'M06', 'S08', '2026-06-15', '2026-07-03'),
-('L09', 'M07', 'S09', '2026-09-05', '2026-09-15'),
+('L09', 'M07', 'S09', CURRENT_DATE - INTERVAL 2 DAY, CURRENT_DATE + INTERVAL 8 DAY),   -- not due yet
 ('L10', 'M08', 'S09', '2026-07-10', '2026-07-25'),
 ('L11', 'M09', 'S05', '2026-09-12', '2026-09-19'),  -- M09 was Active on 2026-09-12; suspended later for this overdue loan
 ('L12', 'M10', 'S06', '2026-08-01', '2026-09-10'),  -- 20 days, renewed once for 20 more

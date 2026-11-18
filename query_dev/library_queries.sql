@@ -467,3 +467,41 @@ LEFT JOIN Loan_Detail ld ON lt.Loan_ID = ld.Loan_ID
 WHERE YEAR(lt.Borrow_Date) = YEAR(CURRENT_DATE)
 GROUP BY MONTH(lt.Borrow_Date)
 ORDER BY Borrow_Month ASC;
+
+-- ############################################################################
+-- PART 3: FOUR QUERIES WRITTEN IN RELATIONAL ALGEBRA
+-- Note: Using operator symbols.
+--   π = projection | σ = selection | γ = grouping and aggregation | ∧ = and
+--   ⨝ = natural join | ⟕ = natural left outer join
+-- ############################################################################
+
+-- Query 1 in Relational Algebra (Topic Q1 - Multi-table Join): Retrieve all physical copies of a specific title ('B01') that are currently available.
+π Book_ID, Title, Copy_ID, Shelf_Location, Condition_Notes (
+    σ Book_ID = 'B01' ∧ Status = 'Available' (
+        Book_Copy ⨝ Book
+    )
+)
+
+-- Query 5 in Relational Algebra (Topic Q5 - Aggregation with GROUP BY using View Loan_Detail_Fine): Calculate the total unpaid fines outstanding per member category.
+γ Member_Type_ID, Type_Name; sum(Fine_Amount) -> Total_Outstanding_Fines (
+    Member_Category ⨝ Member ⨝ (
+        σ Payment_Status = 'Unpaid' (Loan_Detail_Fine)
+    )
+)
+
+-- Query 6 in Relational Algebra (Outer Join): List all library members and their loan transactions, including members who have never borrowed any books.
+π Member_ID, Full_Name, Loan_ID, Borrow_Date, Due_Date (
+    Member ⟕ Loan_Transaction
+)
+
+-- Query 7 in Relational Algebra (GROUP BY & HAVING): List book categories that have at least 3 titles published before the year 2010.
+-- HAVING becomes a σ placed outside the γ.
+π Category_ID, Category_Name, Classic_Book_Count (
+    σ Classic_Book_Count >= 3 (
+        γ Category_ID, Category_Name; count(Book_ID) -> Classic_Book_Count (
+            Category ⨝ (
+                σ Publication_Year < 2010 (Book)
+            )
+        )
+    )
+)

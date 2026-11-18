@@ -2,16 +2,16 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -72,69 +72,49 @@
                   <TableColumn fx:id="col_fine_amount" prefWidth="119.0" text="Fine Amount(VND)" />
               </columns>
             </TableView>
-            <Button alignment="CENTER" mnemonicParsing="false" text="Delete -" StackPane.alignment="BOTTOM_RIGHT" />
+            <Label fx:id="total_fines" style="-fx-background-color: white;" text="Total Fines: 0" StackPane.alignment="BOTTOM_RIGHT">
+               <StackPane.margin>
+                  <Insets bottom="2.0" right="5.0" />
+               </StackPane.margin>
+            </Label>
          </children>
       </StackPane>
    </center>
    <bottom>
-      <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-        <tabs>
-          <Tab text="Process Payment">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+      <TitledPane animated="false" text="Details" BorderPane.alignment="CENTER">
+         <content>
+            <StackPane prefHeight="150.0" prefWidth="200.0">
+               <children>
+                  <ToolBar prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: #f4f4f4f4;" StackPane.alignment="BOTTOM_CENTER">
+                     <items>
+                        <Button alignment="CENTER" layoutX="108.0" layoutY="13.0" mnemonicParsing="false" onAction="#processPayment" text="Process Payment" />
+                        <Button alignment="CENTER" mnemonicParsing="false" onAction="#waive" text="Waive (Cancel)" />
+                     </items>
+                  </ToolBar>
+                  <ImageView fitHeight="92.0" fitWidth="401.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="TOP_LEFT">
+                     <image>
+                        <Image url="@../image/image.png" />
+                     </image>
+                  </ImageView>
+                  <GridPane maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="50.0" prefWidth="250.0">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="193.0" minWidth="10.0" prefWidth="74.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="302.0" minWidth="10.0" prefWidth="176.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
                      <children>
-                        <GridPane layoutX="10.0" layoutY="10.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="287.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
-                           <columnConstraints>
-                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                           </columnConstraints>
-                           <rowConstraints>
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-                           </rowConstraints>
-                           <children>
-                              <Label text="Pay Amount(VND):" />
-                              <Label text="Payement Date" GridPane.rowIndex="1" />
-                              <Label text="Payment method" GridPane.rowIndex="2" />
-                              <TextField GridPane.columnIndex="1" />
-                              <DatePicker GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <ChoiceBox fx:id="payment_select" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                              <Button mnemonicParsing="false" text="Proccess payment" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                           </children>
-                        </GridPane>
+                        <Label text="Days Late:" />
+                        <Label text="Calculate:" GridPane.rowIndex="1" />
+                        <Label fx:id="days_late" text="0" GridPane.columnIndex="1" />
+                        <Label fx:id="calculate" text="= " GridPane.columnIndex="1" GridPane.rowIndex="1" />
                      </children>
-                  </AnchorPane>
-            </content>
-          </Tab>
-          <Tab text="Edit seleted">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <GridPane prefHeight="90.0" prefWidth="291.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0">
-                          <columnConstraints>
-                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                          </columnConstraints>
-                          <rowConstraints>
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                          </rowConstraints>
-                           <children>
-                              <Button mnemonicParsing="false" text="Update" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                              <ChoiceBox prefWidth="150.0" GridPane.columnIndex="1" />
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <Label text="Status:" GridPane.halignment="CENTER" />
-                              <Label layoutX="123.0" layoutY="17.0" text="Fine amount:" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                           </children>
-                        </GridPane>
-                     </children>
-                  </AnchorPane>
-            </content>
-          </Tab>
-        </tabs>
-      </TabPane>
+                  </GridPane>
+               </children>
+            </StackPane>
+         </content>
+      </TitledPane>
    </bottom>
 </BorderPane>

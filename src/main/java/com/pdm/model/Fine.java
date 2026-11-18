@@ -35,8 +35,8 @@ public class Fine {
     public String getLoan_ID() {
         return Loan_ID;
     }
-    public void getDetail_ID(String detail_ID) {
-        Detail_ID = detail_ID;
+    public String getDetail_ID() {
+       return Detail_ID;
     }
     public String getMember_ID() {
         return Member_ID;
@@ -65,5 +65,6 @@ public class Fine {
     public String getPayment_Status() {
         return Payment_Status;
     }
+
 
 }

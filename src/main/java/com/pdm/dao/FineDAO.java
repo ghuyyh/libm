@@ -20,8 +20,8 @@ public class FineDAO {
                 JOIN Member m ON ldf.Member_ID = m.Member_ID
                 JOIN Book b ON ldf.Book_ID = b.Book_ID
                 WHERE ldf.Fine_Amount > 0
-                ORDER BY ldf.Payment_Status DESC, ldf.Due_Date ASC;
-                """;
+                ORDER BY ldf.Payment_Status DESC, ldf.Due_Date ASC
+                                """;
         List<Fine> list = new ArrayList<>();
         try (
                 Connection conn = dbconnect.getConnection();
@@ -42,8 +42,7 @@ public class FineDAO {
                         rs.getDate("Return_Date"),
                         rs.getInt("Days_Late"),
                         rs.getBigDecimal("Fine_Amount"),
-                        rs.getString("Payment_Status")
-                );
+                        rs.getString("Payment_Status"));
                 list.add(fine);
             }
 
@@ -53,4 +52,24 @@ public class FineDAO {
         return list;
     }
 
+    public boolean updatePaymentStatus(String loanId, String status, String detailId) {
+        String update_q = """
+                UPDATE Loan_Detail
+                SET Payment_Status = ?
+                WHERE Loan_ID = ? AND Detail_ID = ?;
+                        """;
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(update_q);) {
+            ps.setString(1, status);
+            ps.setString(2, loanId);
+            ps.setString(3, detailId);
+            int rowsAffected = ps.executeUpdate();
+
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
 }

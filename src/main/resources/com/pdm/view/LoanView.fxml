@@ -60,7 +60,7 @@
    <center>
       <StackPane prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
-            <TableView prefHeight="200.0" prefWidth="200.0">
+            <TableView fx:id="loan_table" prefHeight="200.0" prefWidth="200.0">
               <columns>
                 <TableColumn fx:id="col_loanid" prefWidth="81.0" text="Loan ID" />
                 <TableColumn fx:id="col_memname" prefWidth="237.0" text="Member Name" />
@@ -70,7 +70,7 @@
                   <TableColumn fx:id="col_status" prefWidth="75.0" text="Status" />
               </columns>
             </TableView>
-            <CheckBox mnemonicParsing="false" text="Show overdue today" StackPane.alignment="BOTTOM_RIGHT" />
+            <CheckBox fx:id="overdue_check" mnemonicParsing="false" onAction="#overdueToggle" text="Show overdue today" StackPane.alignment="BOTTOM_RIGHT" />
          </children>
       </StackPane>
    </center>
@@ -81,14 +81,12 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <ScrollPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <ScrollPane fitToWidth="true" layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <content>
                               <GridPane>
                                  <columnConstraints>
-                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="350.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="350.0" />
                                  </columnConstraints>
                                  <rowConstraints>
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -98,19 +96,19 @@
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                  </rowConstraints>
                                  <children>
-                                    <Label text="Loan ID:" />
-                                    <Label text="Member ID:" GridPane.rowIndex="1" />
-                                    <Label text="Member Name:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                                    <Label text="ISBN:" GridPane.rowIndex="2" />
-                                    <Label text="Title:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                                    <Label text="Date Out:" GridPane.rowIndex="3" />
-                                    <Label text="Date Return:" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-                                    <Label text="Status:" GridPane.rowIndex="4" />
+                                    <Label fx:id="lbl_loanid" text="Loan ID:" />
+                                    <Label fx:id="lbl_memid" text="Member ID:" GridPane.rowIndex="1" />
+                                    <Label fx:id="lbl_memname" text="Member Name:" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <Label fx:id="lbl_isbn" text="ISBN:" GridPane.rowIndex="2" />
+                                    <Label fx:id="lbl_title" text="Title:" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label fx:id="lbl_dateout" text="Date Out:" GridPane.rowIndex="3" />
+                                    <Label fx:id="lbl_datereturn" text="Date Return:" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <Label fx:id="lbl_status" text="Status:" GridPane.rowIndex="4" />
                                  </children>
                               </GridPane>
                            </content>
                         </ScrollPane>
-                        <Button mnemonicParsing="false" text="Returned  ✓" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                        <Button fx:id="btn_return" mnemonicParsing="false" onAction="#returnClick" text="Returned  ✓" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -119,7 +117,17 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Button mnemonicParsing="false" text="New loan+" />
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="15.0">
+                           <children>
+                              <Label text="Member ID:" />
+                              <TextField fx:id="new_memid" prefWidth="100.0" promptText="e.g. M01" />
+                              <Label text="ISBN:" />
+                              <TextField fx:id="new_isbn" prefWidth="160.0" promptText="Book ISBN" />
+                              <Label text="Staff ID:" />
+                              <TextField fx:id="new_staff" prefWidth="70.0" text="S05" />
+                              <Button fx:id="btn_newloan" mnemonicParsing="false" onAction="#addLoanClick" text="New loan+" />
+                           </children>
+                        </HBox>
                      </children>
                   </AnchorPane>
             </content>

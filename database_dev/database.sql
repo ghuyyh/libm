@@ -3,20 +3,20 @@
 -- MySQL-specific parts: ENGINE=InnoDB, the expression default
 --   DEFAULT (CURRENT_DATE), DELIMITER and the trigger syntax (DECLARE,
 --   SIGNAL SQLSTATE '45000'), and DATEDIFF and GREATEST in the views.
- 
- 
- 
+
+
+
 SET NAMES utf8mb4;
 SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
- 
+
 DROP DATABASE IF EXISTS library_management_db;
 CREATE DATABASE library_management_db
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
- 
+
 USE library_management_db;
- 
- 
+
+
 -- 1. BR01: A physical book copy (Book_Copy) cannot exist independently without being associated with a parent book title (Book).
 -- 2. BR02: Book reservations (Reservation) are placed on a specific Book (title), whereas active loans (Loan_Detail) are tracked by physical book copies (Book_Copy).
 -- 3. BR03: Member borrowing privileges (limits and loan durations) are strictly 
@@ -48,10 +48,10 @@ USE library_management_db;
 --     Loan_Transaction.Total_Copies_Borrowed -> view Loan_Summary
 --     Loan_Detail.Fine_Amount                -> view Loan_Detail_Fine
 --                                               (5,000 VND per day late)
- 
- 
- 
- 
+
+
+
+
 -- table 1 
 -- Enforces BR03: Defines borrowing limits and loan durations per membership tier
 
@@ -67,10 +67,10 @@ CREATE TABLE Member_Category (
     CONSTRAINT check_MemberCategoryLimit
         CHECK (Borrowing_Limit BETWEEN 1 AND 20  AND Loan_Period BETWEEN 7 AND 20) -- each Member category can borrow difference limit and difference loan
 ) ENGINE=InnoDB;
- 
+
 -- table 2  Member
 -- Enforces BR03: Every member belongs to a valid Member_Category
- 
+
 CREATE TABLE Member (
     Member_ID              VARCHAR(20)  NOT NULL,
     Member_Type_ID         VARCHAR(20)  NOT NULL,
@@ -97,11 +97,11 @@ CREATE TABLE Member (
     CONSTRAINT check_Member_AccountStatus
         CHECK (Account_Status IN ('Active', 'Suspended', 'Expired', 'Locked'))
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- table 3 Member_Phone
 -- Resolves multivalued attribute Phone of Member (1NF)
- 
+
 CREATE TABLE Member_Phone (
     Member_ID VARCHAR(20) NOT NULL,
     Phone     VARCHAR(20) NOT NULL,
@@ -115,11 +115,11 @@ CREATE TABLE Member_Phone (
     CONSTRAINT check_Memberphonelength
         CHECK (CHAR_LENGTH(Phone) BETWEEN 8 AND 20)
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- Table 4  Category
 -- Book subject classification catalogue
- 
+
 CREATE TABLE Category (
     Category_ID   VARCHAR(20)  NOT NULL,
     Category_Name VARCHAR(100) NOT NULL,
@@ -132,11 +132,11 @@ CREATE TABLE Category (
     CONSTRAINT chk_category_name_not_blank
         CHECK (CHAR_LENGTH(TRIM(Category_Name)) > 0) -- Not null is not enough because ' ' is also not null so we need to check 
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- table 5  Publisher
 -- Book publishing house master table
- 
+
 CREATE TABLE Publisher (
     Publisher_ID   VARCHAR(20)  NOT NULL,
     Publisher_Name VARCHAR(150) NOT NULL,
@@ -151,11 +151,11 @@ CREATE TABLE Publisher (
     CONSTRAINT chk_publisher_email_format
         CHECK (Contact_Email IS NULL OR Contact_Email LIKE '%_@__%.__%')
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- table 6  Author
 -- Book author master table
- 
+
 CREATE TABLE Author (
     Author_ID   VARCHAR(20)  NOT NULL,
     Author_Name VARCHAR(150) NOT NULL, 
@@ -166,10 +166,10 @@ CREATE TABLE Author (
     CONSTRAINT chk_author_name_not_blank
         CHECK (CHAR_LENGTH(TRIM(Author_Name)) > 0)
 ) ENGINE=InnoDB;
- 
+
 -- table 7  Book
 -- Catalogue book title with ISBN, Title, Publication_Year, Category, Publisher
- 
+
 CREATE TABLE Book (
     Book_ID          VARCHAR(20)  NOT NULL,
     Category_ID      VARCHAR(20)  NOT NULL DEFAULT 'CAT00',
@@ -196,11 +196,11 @@ CREATE TABLE Book (
         ON DELETE RESTRICT
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- table 8  Book_Author
 -- Resolves M:N relationship Written_By carrying attribute Author_Order
- 
+
 CREATE TABLE Book_Author (
     Book_ID      VARCHAR(20) NOT NULL,
     Author_ID    VARCHAR(20) NOT NULL,
@@ -222,11 +222,11 @@ CREATE TABLE Book_Author (
         ON DELETE RESTRICT
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- table 9  Staff
 -- Enforces BR04: Organizational hierarchy via recursive self-referencing FK
- 
+
 CREATE TABLE Staff (
     Staff_ID      VARCHAR(20)  NOT NULL,
     Supervisor_ID VARCHAR(20)  NULL DEFAULT NULL,
@@ -237,7 +237,7 @@ CREATE TABLE Staff (
         PRIMARY KEY (Staff_ID),
     CONSTRAINT unique_staffemail
         UNIQUE (Email),
- 
+
     CONSTRAINT FK_staffSupervisor
         FOREIGN KEY (Supervisor_ID)
         REFERENCES Staff (Staff_ID)
@@ -246,12 +246,12 @@ CREATE TABLE Staff (
     CONSTRAINT check_staffemailformat
         CHECK (Email LIKE '%_@__%.__%')
 ) ENGINE=InnoDB;
- 
+
 -- Table 10 Loan_Transaction
 -- Header table for a borrowing transaction handled by a Staff member
 -- Total_Copies_Borrowed is a derived attribute in the ER diagram: it is not
 -- stored here, the view Loan_Summary counts the loan lines instead.
- 
+
 CREATE TABLE Loan_Transaction (
     Loan_ID               VARCHAR(20) NOT NULL,
     Member_ID             VARCHAR(20) NOT NULL,
@@ -273,11 +273,11 @@ CREATE TABLE Loan_Transaction (
     CONSTRAINT check_loantransactionDate
         CHECK (Due_Date >= Borrow_Date)
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- table 11  Book_Copy (Weak Entity Set)
 -- Enforces BR01: Identified by composite key (Book_ID, Copy_ID)
- 
+
 CREATE TABLE Book_Copy (
     Book_ID         VARCHAR(20)  NOT NULL,
     Copy_ID         VARCHAR(20)  NOT NULL,
@@ -294,14 +294,14 @@ CREATE TABLE Book_Copy (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- table 12  Reservation
 -- Enforces BR02: Reservations reference Book_ID (title level), whereas loans
 -- (Loan_Detail) reference a physical copy. A member waits for "any copy of
 -- this title", so the reservation cannot name a copy. Reserving only a
 -- title that is fully on loan is checked by the Java application.
- 
+
 CREATE TABLE Reservation (
     Reservation_ID   VARCHAR(20) NOT NULL,
     Member_ID        VARCHAR(20) NOT NULL,
@@ -323,13 +323,13 @@ CREATE TABLE Reservation (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- table 13  Loan_Detail (Weak Entity Set)
 -- Enforces BR02 & BR05: Links to physical copy (Book_ID, Copy_ID) & tracks fines
 -- Fine_Amount is a derived attribute in the ER diagram: it is not stored
 -- here, the view Loan_Detail_Fine computes it.
- 
+
 CREATE TABLE Loan_Detail (
     Loan_ID        VARCHAR(20)    NOT NULL,
     Detail_ID      VARCHAR(20)    NOT NULL,
@@ -357,8 +357,8 @@ CREATE TABLE Loan_Detail (
     CONSTRAINT check_loandetail_paymentstatus
         CHECK (Payment_Status IN ('None', 'Unpaid', 'Paid', 'Waived'))
 ) ENGINE=InnoDB;
- 
- 
+
+
 -- Indexes: each one names the Topic 22 query it helps
 -- Circulation and fines
 CREATE INDEX index_loanTransaction_member_due ON Loan_Transaction (Member_ID, Due_Date);    -- Q2 loans of one member overdue today
@@ -399,13 +399,17 @@ SELECT ld.Loan_ID,
        ld.Return_Date,
        GREATEST(DATEDIFF(COALESCE(ld.Return_Date, CURRENT_DATE), lt.Due_Date), 0) AS Days_Late,
        GREATEST(DATEDIFF(COALESCE(ld.Return_Date, CURRENT_DATE), lt.Due_Date), 0) * 5000.00 AS Fine_Amount,
-       ld.Payment_Status
+       ld.Payment_Status,       CASE
+           WHEN ld.Return_Date IS NOT NULL THEN 'Returned'
+           WHEN lt.Due_Date < CURRENT_DATE THEN 'Overdue'
+           ELSE 'Not overdue'
+       END AS Loan_Status
 FROM Loan_Detail ld
 INNER JOIN Loan_Transaction lt
     ON lt.Loan_ID = ld.Loan_ID;
- 
- 
- 
+
+
+
 --  Member_Category (15 rows)
 INSERT INTO Member_Category (Member_Type_ID, Type_Name, Borrowing_Limit, Loan_Period) VALUES
 ('MC01', 'Undergraduate Student', 5, 10),
@@ -423,7 +427,7 @@ INSERT INTO Member_Category (Member_Type_ID, Type_Name, Borrowing_Limit, Loan_Pe
 ('MC13', 'Corporate Partner', 8, 20),
 ('MC14', 'Retired Faculty', 10, 20),
 ('MC15', 'Honorary Fellow', 20, 19);
- 
+
 --  Member (15 rows)
 INSERT INTO Member (Member_ID, Member_Type_ID, Full_Name, Email, Identity_Card, Membership_Expiry_Date, Account_Status) VALUES
 ('M01', 'MC01', 'Nguyen Van A', 'NVA@hcmiu.edu.vn', '079205001001', '2027-08-31', 'Active'),
@@ -441,7 +445,7 @@ INSERT INTO Member (Member_ID, Member_Type_ID, Full_Name, Email, Identity_Card, 
 ('M13', 'MC03', 'Nguyen Van M', 'NVM@hcmiu.edu.vn', '079205001013', '2027-11-30', 'Active'),
 ('M14', 'MC11', 'Nguyen Van N', 'NVN@gmail.com', '079205001014', '2026-04-30', 'Expired'),
 ('M15', 'MC09', 'Nguyen Van O', 'NVO@alumni.hcmiu.edu.vn', '079205001015', '2027-07-31', 'Locked');
- 
+
 -- Member_Phone (16 rows)
 INSERT INTO Member_Phone (Member_ID, Phone) VALUES
 ('M01', '0901112201'),
@@ -460,7 +464,7 @@ INSERT INTO Member_Phone (Member_ID, Phone) VALUES
 ('M12', '0901112212'),
 ('M13', '0901112213'),
 ('M14', '0901112214');
- 
+
 --  Category (16 rows)
 INSERT INTO Category (Category_ID, Category_Name, Description) VALUES
 ('CAT00', 'Uncategorized', 'Books that unassigned to a specific category.'),
@@ -479,7 +483,7 @@ INSERT INTO Category (Category_ID, Category_Name, Description) VALUES
 ('CAT13', 'Economics', 'Macroeconomics, microeconomics, and global markets.'),
 ('CAT14', 'Business & Management', 'Leadership, marketing, and corporate strategy.'),
 ('CAT15', 'Political Science', 'Government structures, international relations, and public policy.');
- 
+
 -- Publisher (15 rows)
 INSERT INTO Publisher (Publisher_ID, Publisher_Name, Address, Contact_Email) VALUES
 ('PUB01', 'MIT Press', 'Cambridge, MA, USA', 'info@mitpress.mit.edu'),
@@ -497,7 +501,7 @@ INSERT INTO Publisher (Publisher_ID, Publisher_Name, Address, Contact_Email) VAL
 ('PUB13', 'Simon & Schuster', 'New York, NY, USA', 'contact@simonandschuster.com'),
 ('PUB14', 'Macmillan', 'London, UK', 'contact@macmillan.com'),
 ('PUB15', 'Hachette Livre', 'Paris, France', 'contact@hachette.com');
- 
+
 -- Author (18 rows)
 INSERT INTO Author (Author_ID, Author_Name, Biography) VALUES
 ('AUTH01', 'Thomas H. Cormen', 'Professor of computer science at Dartmouth College.'),
@@ -518,7 +522,7 @@ INSERT INTO Author (Author_ID, Author_Name, Biography) VALUES
 ('AUTH16', 'Charles E. Leiserson', 'Professor of computer science and engineering at MIT.'),
 ('AUTH17', 'Ronald L. Rivest', 'Cryptographer and professor at MIT, co-inventor of RSA.'),
 ('AUTH18', 'Clifford Stein', 'Professor of industrial engineering and computer science at Columbia University.');
- 
+
 -- Book (15 rows)
 INSERT INTO Book (Book_ID, Category_ID, Publisher_ID, ISBN, Title, Publication_Year) VALUES
 ('B01', 'CAT01', 'PUB01', '978-0262033848', 'Introduction to Algorithms', 2009),
@@ -536,7 +540,7 @@ INSERT INTO Book (Book_ID, Category_ID, Publisher_ID, ISBN, Title, Publication_Y
 ('B13', 'CAT10', 'PUB15', '978-0141439518', 'Pride and Prejudice', 1813),
 ('B14', 'CAT10', 'PUB11', '978-0486280615', 'The Adventures of Tom Sawyer', 1876),
 ('B15', 'CAT10', 'PUB12', '978-0451524935', '1984', 1949);
- 
+
 --  Book_Author (18 rows)
 INSERT INTO Book_Author (Book_ID, Author_ID, Author_Order) VALUES
 ('B01', 'AUTH01', 1),
@@ -557,7 +561,7 @@ INSERT INTO Book_Author (Book_ID, Author_ID, Author_Order) VALUES
 ('B13', 'AUTH13', 1),
 ('B14', 'AUTH14', 1),
 ('B15', 'AUTH15', 1);
- 
+
 --  Staff (15 rows)
 INSERT INTO Staff (Staff_ID, Supervisor_ID, Full_Name, Position, Email) VALUES
 ('S01', NULL,  'Dr. Nguyen Thi Minh Khai', 'Chief Librarian', 'ntmkhai@hcmiu.edu.vn'),
@@ -575,30 +579,31 @@ INSERT INTO Staff (Staff_ID, Supervisor_ID, Full_Name, Position, Email) VALUES
 ('S13', 'S04', 'Mai Phuong Thuy', 'Cataloguing Assistant', 'mpthuy@hcmiu.edu.vn'),
 ('S14', 'S04', 'Cao Thai Son', 'Acquisitions Specialist', 'ctson@hcmiu.edu.vn'),
 ('S15', 'S02', 'Huynh Thuc Khang', 'IT Systems Librarian', 'htkhang@hcmiu.edu.vn');
- 
+
 --  Loan_Transaction (15 rows)
 -- Trigger 1 allows a Due_Date of at most Borrow_Date + the Loan_Period of the
 -- member's category, and most loans below use that full period (MC01 10 days,
 -- MC02 15, MC03 and MC04 20, MC05 18, MC08 7). L13 and L14 are shorter loans.
 -- L12 was renewed once, which adds one more period (Renewal_Count in Loan_Detail).
- 
 INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date) VALUES
 ('L01', 'M01', 'S05', '2026-01-15', '2026-01-25'),
 ('L02', 'M02', 'S05', '2026-02-10', '2026-02-25'),
 ('L03', 'M01', 'S06', '2026-09-01', '2026-09-11'),
 ('L04', 'M03', 'S06', '2026-03-05', '2026-03-25'),
 ('L05', 'M04', 'S07', '2026-04-12', '2026-04-22'),
-('L06', 'M01', 'S07', '2026-09-10', '2026-09-20'),
+('L06', 'M01', 'S07', CURRENT_DATE - INTERVAL 5 DAY, CURRENT_DATE + INTERVAL 5 DAY),   -- not due yet
 ('L07', 'M05', 'S08', '2026-05-20', '2026-06-09'),
 ('L08', 'M06', 'S08', '2026-06-15', '2026-07-03'),
-('L09', 'M07', 'S09', '2026-09-05', '2026-09-15'),
+('L09', 'M07', 'S09', CURRENT_DATE - INTERVAL 2 DAY, CURRENT_DATE + INTERVAL 8 DAY),   -- not due yet
 ('L10', 'M08', 'S09', '2026-07-10', '2026-07-25'),
 ('L11', 'M09', 'S05', '2026-09-12', '2026-09-19'),  -- M09 was Active on 2026-09-12; suspended later for this overdue loan
 ('L12', 'M10', 'S06', '2026-08-01', '2026-09-10'),  -- 20 days, renewed once for 20 more
 ('L13', 'M11', 'S07', '2026-08-18', '2026-09-01'),
 ('L14', 'M12', 'S08', '2026-08-22', '2026-09-05'),
-('L15', 'M13', 'S09', '2026-10-10', '2026-10-30');
- 
+('L15', 'M13', 'S09', '2026-10-10', '2026-10-30'),
+('L18', 'M05', 'S07', CURRENT_DATE - INTERVAL 5 DAY, CURRENT_DATE + INTERVAL 15 DAY),  -- MC04: 20 days
+('L19', 'M08', 'S08', CURRENT_DATE - INTERVAL 2 DAY, CURRENT_DATE + INTERVAL 13 DAY);  -- MC02: 15 days
+
 -- Book_Copy (21 rows)
 -- Condition_Notes record only the physical state of a copy, on one scale:
 --   New      no wear                     Fair     visible wear (bent or worn cover)
@@ -607,7 +612,7 @@ INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Dat
 -- Why a copy is Borrowed or Reserved is not written in the note: that comes
 -- from Loan_Detail and Reservation (see the comment at the end of a line),
 -- so the note stays true when the copy is returned.
- 
+
 INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes) VALUES
 ('B01', 'C01', 'Shelf A - Row 1', 'Available', 'Good'),
 ('B01', 'C02', 'Shelf A - Row 1', 'Available', 'New'),
@@ -624,13 +629,13 @@ INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes
 ('B08', 'C01', 'Shelf D - Row 2', 'Available', 'Good'),
 ('B09', 'C01', 'Shelf E - Row 1', 'Available', 'Good'),   -- never lent, so B09 was never fully on loan
 ('B09', 'C02', 'Shelf E - Row 1', 'Borrowed',  'Good'),   -- out on loan L09
-('B10', 'C01', 'Shelf E - Row 2', 'Available', 'Fair: cover slightly worn'),
-('B11', 'C01', 'Shelf F - Row 1', 'Available', 'Good'),
+('B10', 'C01', 'Shelf E - Row 2', 'Borrowed',  'Fair: cover slightly worn'),   -- out on loan L18
+('B11', 'C01', 'Shelf F - Row 1', 'Borrowed',  'Good'),                        -- out on loan L19
 ('B12', 'C01', 'Shelf F - Row 2', 'Borrowed',  'Good'),   -- out on loan L11
 ('B13', 'C01', 'Shelf F - Row 3', 'Borrowed',  'Good'),   -- out on loan L15
 ('B14', 'C01', 'Shelf G - Row 1', 'Available', 'New'),    -- never lent
 ('B15', 'C01', 'Shelf G - Row 2', 'Available', 'New');    -- never lent
- 
+
 -- Reservation (15 rows)
 -- A member reserves a title only when no copy of it is on the shelf (each
 -- copy is borrowed, kept for another member, damaged or lost). When a copy
@@ -640,7 +645,7 @@ INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes
 --   Confirmed  a returned copy is kept at the desk for the member
 --   Completed  the member has collected the book
 --   Cancelled  the member cancelled, or never collected the copy
- 
+
 INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, Status) VALUES
 -- January to September: older reservations
 ('RES01', 'M11', 'B11', '2026-01-20', 'Cancelled'),  -- The Interpretation of Dreams: only copy out on loan L01
@@ -653,20 +658,26 @@ INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, S
 ('RES08', 'M12', 'B02', '2026-09-03', 'Cancelled'),  -- Algorithms Unlocked: both copies were out; C01 came back on 2026-09-06, but M12 never picked it up
 -- October: members still waiting
 ('RES09', 'M05', 'B06', '2026-10-05', 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
+--  members still waiting
+('RES09', 'M05', 'B06', CURRENT_DATE - INTERVAL 4 DAY, 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
 ('RES10', 'M06', 'B12', '2026-10-06', 'Pending'),    -- Hamlet: only copy out on loan L11; 1st in the queue
 ('RES11', 'M03', 'B03', '2026-10-09', 'Pending'),    -- Clean Code: C01 kept for RES07, C02 out on loan L03; next after RES07
 ('RES12', 'M08', 'B13', '2026-10-12', 'Pending'),    -- Pride and Prejudice: only copy out on loan L15; 1st in the queue
 ('RES13', 'M12', 'B12', '2026-10-12', 'Pending'),    -- Hamlet: 2nd in the queue, after RES10
 ('RES14', 'M04', 'B06', '2026-10-14', 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
+('RES14', 'M04', 'B06', CURRENT_DATE - INTERVAL 1 DAY, 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
 ('RES15', 'M11', 'B13', '2026-10-18', 'Pending');    -- Pride and Prejudice: 2nd in the queue, after RES12
- 
+
 -- Loan_Detail (18 rows)
 -- The fine of a line is not stored: the view Loan_Detail_Fine computes it
 -- (5,000 VND per day late). Payment_Status says whether that fine is
 -- Unpaid, Paid or Waived, and is 'None' for a copy returned on time.
 -- Copies still out (Return_Date NULL) were already overdue when this data was
 -- entered, so they are marked 'Unpaid'; L15 was not due yet, so it is 'None'.
- 
+-- Copies still out (Return_Date NULL): lines already past their due date
+-- (L03, L11, L15) are 'Unpaid'; lines not yet due (L06, L09, L18, L19,
+-- dates relative to CURRENT_DATE) are 'None'.
+
 INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status) VALUES
 ('L01', 'D01', 'B01', 'C01', '2026-01-24', 0, 'None'),
 ('L01', 'D02', 'B11', 'C01', '2026-01-24', 0, 'None'),
@@ -677,18 +688,23 @@ INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Rene
 ('L04', 'D01', 'B04', 'C01', '2026-04-02', 0, 'Unpaid'),   -- 8 days late: 40,000 VND
 ('L05', 'D01', 'B05', 'C01', '2026-04-30', 0, 'Unpaid'),   -- 8 days late: 40,000 VND
 ('L06', 'D01', 'B06', 'C02', NULL,         0, 'Unpaid'),
+('L06', 'D01', 'B06', 'C02', NULL,         0, 'None'),
 ('L07', 'D01', 'B07', 'C01', '2026-06-03', 0, 'None'),
 ('L08', 'D01', 'B08', 'C01', '2026-07-13', 0, 'Unpaid'),   -- 10 days late: 50,000 VND
 ('L09', 'D01', 'B09', 'C02', NULL,         0, 'Unpaid'),
+('L09', 'D01', 'B09', 'C02', NULL,         0, 'None'),
 ('L10', 'D01', 'B10', 'C01', '2026-07-30', 0, 'Paid'),     -- 5 days late: 25,000 VND
 ('L11', 'D01', 'B12', 'C01', NULL,         0, 'Unpaid'),
 ('L12', 'D01', 'B01', 'C01', '2026-09-10', 1, 'None'),     -- renewed once, returned on the due date
 ('L13', 'D01', 'B02', 'C01', '2026-09-06', 0, 'Waived'),   -- 5 days late: 25,000 VND, waived
 ('L14', 'D01', 'B03', 'C01', '2026-09-04', 0, 'None'),
-('L15', 'D01', 'B13', 'C01', NULL,         0, 'None');
- 
- 
- 
+('L15', 'D01', 'B13', 'C01', NULL,         0, 'None'),
+('L15', 'D01', 'B13', 'C01', NULL,         0, 'Unpaid'),
+('L18', 'D01', 'B10', 'C01', NULL,         0, 'None'),   -- not overdue
+('L19', 'D01', 'B11', 'C01', NULL,         0, 'None');   -- not overdue
+
+
+
 DROP TRIGGER IF EXISTS trigger_loantransaction_before_insertMember;
 DROP TRIGGER IF EXISTS trg_before_loan_detail_insert_check_copy;
 DROP TRIGGER IF EXISTS trg_before_loan_detail_update_check;
@@ -696,7 +712,7 @@ DROP TRIGGER IF EXISTS trg_staff_before_insert_hierarchy;
 DROP TRIGGER IF EXISTS trg_staff_before_update_hierarchy;
 
 DELIMITER $$
- 
+
 -- Trigger 1  Enforces BR03 on Loan_Transaction
 CREATE TRIGGER trigger_loantransaction_before_insertMember
 BEFORE INSERT ON Loan_Transaction
@@ -707,7 +723,7 @@ BEGIN
     DECLARE v_limit        INT; -- borrow limit
     DECLARE v_loan_period  INT; -- loan _ period
     DECLARE v_active_loans INT;
- 
+
     SELECT m.Account_Status, m.Membership_Expiry_Date,
            mc.Borrowing_Limit, mc.Loan_Period
     INTO v_status, v_expiry, v_limit, v_loan_period
@@ -715,23 +731,23 @@ BEGIN
     INNER JOIN Member_Category mc
         ON m.Member_Type_ID = mc.Member_Type_ID
     WHERE m.Member_ID = NEW.Member_ID;
- 
+
     IF v_status IS NOT NULL THEN
         IF v_status <> 'Active' THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR03 Violation: Member account is not Active and cannot borrow books.';
         END IF;
- 
+
         IF v_expiry < NEW.Borrow_Date THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR03 Violation: Membership card has expired prior to the borrow date.';
         END IF;
- 
+
         IF DATEDIFF(NEW.Due_Date, NEW.Borrow_Date) > v_loan_period THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR03 Violation: Loan duration exceeds the allowed period for this membership category.';
         END IF;
- 
+
         SELECT COUNT(*) -- count books not return 
         INTO v_active_loans -- số cuốn sách đang giữ chưa trả
         FROM Loan_Transaction lt
@@ -739,14 +755,14 @@ BEGIN
             ON lt.Loan_ID = ld.Loan_ID
         WHERE lt.Member_ID = NEW.Member_ID
           AND ld.Return_Date IS NULL; -- number of book that is not return 
- 
+
         IF (v_active_loans + 1) > v_limit THEN -- chặn việc mượn quá sách
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR03 Violation: Borrowing limit exceeded for this membership category.';
         END IF;
     END IF;
 END$$
- 
+
 -- Trigger 2  Enforces BR02 on Loan_Detail (new loan line)
 --   BR05: a line entered as already returned after the due date must
 --        carry a fine, and a line returned on time must not.
@@ -763,7 +779,7 @@ BEGIN
     DECLARE v_limit  INT          DEFAULT NULL;
     DECLARE v_open   INT          DEFAULT 0;
     DECLARE v_borrow DATE         DEFAULT NULL;
- 
+
     -- The loan this line belongs to: who borrows, the dates, the limit
     SELECT lt.Member_ID, lt.Borrow_Date, lt.Due_Date, mc.Borrowing_Limit
     INTO v_member, v_borrow, v_due, v_limit
@@ -773,14 +789,14 @@ BEGIN
     INNER JOIN Member_Category mc
         ON m.Member_Type_ID = mc.Member_Type_ID
     WHERE lt.Loan_ID = NEW.Loan_ID;
- 
+
     -- A copy cannot come back before it went out. A CHECK cannot see
     -- Borrow_Date, which lives in Loan_Transaction, so the trigger does it.
     IF NEW.Return_Date IS NOT NULL AND NEW.Return_Date < v_borrow THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Date Violation: Return_Date cannot be earlier than the Borrow_Date of the loan.';
     END IF;
- 
+
     -- BR05: returned after the due date, so a fine must be recorded
     -- (Unpaid, Paid or Waived); returned on time, so no fine (None).
     -- The amount itself is computed by the view Loan_Detail_Fine.
@@ -788,17 +804,17 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'BR05 Violation: A copy returned after its due date must carry a fine (Unpaid, Paid or Waived).';
     END IF;
- 
+
     IF NEW.Return_Date IS NOT NULL AND NEW.Return_Date <= v_due AND NEW.Payment_Status <> 'None' THEN
         SIGNAL SQLSTATE '45000'     
             SET MESSAGE_TEXT = 'BR05 Violation: A copy returned on time has no fine, so its Payment_Status must be None.';
     END IF;
- 
+
     IF NEW.Return_Date IS NULL THEN
         SELECT Status INTO v_status
         FROM Book_Copy
         WHERE Book_ID = NEW.Book_ID AND Copy_ID = NEW.Copy_ID;
- 
+
         IF v_status IS NULL THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR02 Violation: Cannot lend because this book copy does not exist.';
@@ -807,7 +823,7 @@ BEGIN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = v_msg;
         END IF;
- 
+
         -- BR02: one physical copy is on at most one open loan line. Status
         -- is set by hand, so the trigger also looks at the open lines.
         IF EXISTS (SELECT 1
@@ -818,7 +834,7 @@ BEGIN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR02 Violation: This copy is already out on another loan that has not been returned.';
         END IF;
- 
+
         -- BR03: copies this member already has out, plus this one
         SELECT COUNT(*)
         INTO v_open
@@ -827,14 +843,14 @@ BEGIN
             ON ld.Loan_ID = lt.Loan_ID
         WHERE lt.Member_ID = v_member
           AND ld.Return_Date IS NULL;
- 
+
         IF v_open + 1 > v_limit THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR03 Violation: Borrowing limit exceeded for this membership category.';
         END IF;
     END IF;
 END$$
- 
+
 -- Trigger 3  BEFORE UPDATE on Loan_Detail.
 --   BR05: a copy returned after its due date carries a fine, and a copy
 --         returned on time carries none;
@@ -843,7 +859,7 @@ END$$
 --   BR02: a line that becomes open, or points to another copy, must not put
 --         one copy on two open loans;
 --   a copy cannot be returned before the loan's Borrow_Date.
- 
+
 CREATE TRIGGER trg_before_loan_detail_update_check
 BEFORE UPDATE ON Loan_Detail
 FOR EACH ROW
@@ -853,7 +869,7 @@ BEGIN
     DECLARE v_due    DATE        DEFAULT NULL;
     DECLARE v_limit  INT         DEFAULT NULL;
     DECLARE v_open   INT         DEFAULT 0;
- 
+
     SELECT lt.Member_ID, lt.Borrow_Date, lt.Due_Date, mc.Borrowing_Limit
     INTO v_member, v_borrow, v_due, v_limit
     FROM Loan_Transaction lt
@@ -862,12 +878,12 @@ BEGIN
     INNER JOIN Member_Category mc
         ON m.Member_Type_ID = mc.Member_Type_ID
     WHERE lt.Loan_ID = NEW.Loan_ID;
- 
+
     IF NEW.Return_Date IS NOT NULL AND NEW.Return_Date < v_borrow THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Date Violation: Return_Date cannot be earlier than the Borrow_Date of the loan.';
     END IF;
- 
+
     IF NEW.Return_Date IS NULL
        AND (OLD.Return_Date IS NOT NULL
             OR NEW.Book_ID <> OLD.Book_ID
@@ -881,17 +897,17 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'BR02 Violation: This copy is already out on another loan that has not been returned.';
     END IF;
- 
+
     IF NEW.Return_Date IS NOT NULL AND NEW.Return_Date > v_due AND NEW.Payment_Status = 'None' THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'BR05 Violation: A copy returned after its due date must carry a fine (Unpaid, Paid or Waived).';
     END IF;
- 
+
     IF NEW.Return_Date IS NOT NULL AND NEW.Return_Date <= v_due AND NEW.Payment_Status <> 'None' THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'BR05 Violation: A copy returned on time has no fine, so its Payment_Status must be None.';
     END IF;
- 
+
     IF NEW.Return_Date IS NULL
        AND (OLD.Return_Date IS NOT NULL OR NEW.Loan_ID <> OLD.Loan_ID) THEN
         SELECT COUNT(*)
@@ -902,14 +918,14 @@ BEGIN
         WHERE lt.Member_ID = v_member
           AND ld.Return_Date IS NULL
           AND NOT (ld.Loan_ID = OLD.Loan_ID AND ld.Detail_ID = OLD.Detail_ID);
- 
+
         IF v_open + 1 > v_limit THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR03 Violation: Borrowing limit exceeded for this membership category.';
         END IF;
     END IF;
 END$$
- 
+
 -- Triggers 4 and 5  Enforce BR04 on Staff: nobody supervises themself
 --   (the FK alone only checks that the supervisor exists).
 CREATE TRIGGER trg_staff_before_insert_hierarchy
@@ -921,7 +937,7 @@ BEGIN
             SET MESSAGE_TEXT = 'BR04 Violation: A staff member cannot be their own supervisor.';
     END IF;
 END$$
- 
+
 CREATE TRIGGER trg_staff_before_update_hierarchy
 BEFORE UPDATE ON Staff
 FOR EACH ROW
@@ -933,7 +949,3 @@ BEGIN
 END$$
 
 DELIMITER ;
- 
- 
- 
-

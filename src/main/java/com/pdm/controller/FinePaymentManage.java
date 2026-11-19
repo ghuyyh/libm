@@ -2,6 +2,7 @@ package com.pdm.controller;
 
 import com.pdm.dao.FineDAO;
 import com.pdm.model.Fine;
+import javafx.scene.control.TextField;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -38,6 +39,8 @@ public class FinePaymentManage extends basecontrol {
     private Label total_fines;
     @FXML
     private Label calculate;
+    @FXML 
+    private TextField search_field;
 
     // @FXML
     // private ChoiceBox<String> status_select = new ChoiceBox<>();
@@ -75,6 +78,18 @@ public class FinePaymentManage extends basecontrol {
                 days_late.setText("");
                 calculate.setText("= ");
             }
+        });
+
+        search_field.setOnAction(event -> { // search book
+            System.out.println("search:" + search_field.getText());
+            String searchText = search_field.getText();
+            if (searchText.isEmpty()) {
+                refreshFineTable();
+            } else {
+                fine_list.setAll(fineDAO.searchFines(searchText));
+                total_fines.setText("Total Fines: " + fine_list.size());
+            }
+
         });
     }
 
@@ -128,7 +143,8 @@ public class FinePaymentManage extends basecontrol {
             String detailId = selectedFine.getDetail_ID();
 
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-            confirm.setContentText("Are you sure you want to waive this fine? It mean the reader will not must pay this fine.");
+            confirm.setContentText(
+                    "Are you sure you want to waive this fine? It mean the reader will not must pay this fine.");
             confirm.showAndWait();
             if (confirm.getResult().getText().equals("Cancel")) {
                 return;

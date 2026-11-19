@@ -689,8 +689,7 @@ INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Rene
 ('L13', 'D01', 'B02', 'C01', '2026-09-06', 0, 'Waived'),   -- 5 days late: 25,000 VND, waived
 ('L14', 'D01', 'B03', 'C01', '2026-09-04', 0, 'None'),
 ('L15', 'D01', 'B13', 'C01', NULL,         0, 'Unpaid'),
-('L18', 'D01', 'B10', 'C01', NULL,         0, 'None'),   -- not overdue
-('L19', 'D01', 'B11', 'C01', NULL,         0, 'None');   -- not overdue
+
  
  
  

@@ -668,7 +668,7 @@ INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, S
 ('RES14', 'M04', 'B06', CURRENT_DATE - INTERVAL 1 DAY, 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
 ('RES15', 'M11', 'B13', '2026-10-18', 'Pending');    -- Pride and Prejudice: 2nd in the queue, after RES12
 
--- Loan_Detail (18 rows)
+-- Loan_Detail (23 rows)
 -- The fine of a line is not stored: the view Loan_Detail_Fine computes it
 -- (5,000 VND per day late). Payment_Status says whether that fine is
 -- Unpaid, Paid or Waived, and is 'None' for a copy returned on time.

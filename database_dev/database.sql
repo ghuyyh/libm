@@ -662,7 +662,7 @@ INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, S
 ('RES14', 'M04', 'B06', CURRENT_DATE - INTERVAL 1 DAY, 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
 ('RES15', 'M11', 'B13', '2026-10-18', 'Pending');    -- Pride and Prejudice: 2nd in the queue, after RES12
  
--- Loan_Detail (18 rows)
+-- Loan_Detail (20 rows)
 -- The fine of a line is not stored: the view Loan_Detail_Fine computes it
 -- (5,000 VND per day late). Payment_Status says whether that fine is
 -- Unpaid, Paid or Waived, and is 'None' for a copy returned on time.
@@ -688,8 +688,9 @@ INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Rene
 ('L12', 'D01', 'B01', 'C01', '2026-09-10', 1, 'None'),     -- renewed once, returned on the due date
 ('L13', 'D01', 'B02', 'C01', '2026-09-06', 0, 'Waived'),   -- 5 days late: 25,000 VND, waived
 ('L14', 'D01', 'B03', 'C01', '2026-09-04', 0, 'None'),
-('L15', 'D01', 'B13', 'C01', NULL,         0, 'Unpaid');
-
+('L15', 'D01', 'B13', 'C01', NULL,         0, 'Unpaid'),
+('L18', 'D01', 'B10', 'C01', NULL,         0, 'None'),
+('L19', 'D01', 'B11', 'C01', NULL,         0, 'None');
  
  
  

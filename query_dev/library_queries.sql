@@ -468,40 +468,274 @@ WHERE YEAR(lt.Borrow_Date) = YEAR(CURRENT_DATE)
 GROUP BY MONTH(lt.Borrow_Date)
 ORDER BY Borrow_Month ASC;
 
--- ############################################################################
--- PART 3: FOUR QUERIES WRITTEN IN RELATIONAL ALGEBRA
--- Note: Using operator symbols.
---   π = projection | σ = selection | γ = grouping and aggregation | ∧ = and
---   ⨝ = natural join | ⟕ = natural left outer join
--- ############################################################################
+-- =====================================================================
+-- SECTION 2: DATA MODIFICATION & TRANSACTIONS (REQUIREMENT 2.3)
+-- Covers at least one INSERT, UPDATE, and DELETE for each of the 11
+-- main entity tables (plus associative/multivalued tables), and
+-- multi-table atomic transactions demonstrating COMMIT and ROLLBACK.
+-- =====================================================================
 
--- Query 1 in Relational Algebra (Topic Q1 - Multi-table Join): Retrieve all physical copies of a specific title ('B01') that are currently available.
-π Book_ID, Title, Copy_ID, Shelf_Location, Condition_Notes (
-    σ Book_ID = 'B01' ∧ Status = 'Available' (
-        Book_Copy ⨝ Book
-    )
-)
+-- ---------------------------------------------------------------------
+-- [2.3.1] Main Table 1: Category (Category Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Add a new subject category
+INSERT INTO Category (Category_ID, Category_Name, Description)
+VALUES ('CAT16', 'Data Science', 'Big data analytics, data mining, and visualization.');
 
--- Query 5 in Relational Algebra (Topic Q5 - Aggregation with GROUP BY using View Loan_Detail_Fine): Calculate the total unpaid fines outstanding per member category.
-γ Member_Type_ID, Type_Name; sum(Fine_Amount) -> Total_Outstanding_Fines (
-    Member_Category ⨝ Member ⨝ (
-        σ Payment_Status = 'Unpaid' (Loan_Detail_Fine)
-    )
-)
+-- UPDATE: Edit the description of the subject category
+UPDATE Category
+SET Description = 'Big data analytics, statistical modeling, and visualization.'
+WHERE Category_ID = 'CAT16';
 
--- Query 6 in Relational Algebra (Outer Join): List all library members and their loan transactions, including members who have never borrowed any books.
-π Member_ID, Full_Name, Loan_ID, Borrow_Date, Due_Date (
-    Member ⟕ Loan_Transaction
-)
+-- DELETE: Remove a subject category not referenced by any book (fk_book_category is RESTRICT)
+DELETE FROM Category
+WHERE Category_ID = 'CAT16';
 
--- Query 7 in Relational Algebra (GROUP BY & HAVING): List book categories that have at least 3 titles published before the year 2010.
--- HAVING becomes a σ placed outside the γ.
-π Category_ID, Category_Name, Classic_Book_Count (
-    σ Classic_Book_Count >= 3 (
-        γ Category_ID, Category_Name; count(Book_ID) -> Classic_Book_Count (
-            Category ⨝ (
-                σ Publication_Year < 2010 (Book)
-            )
-        )
-    )
-)
+
+-- ---------------------------------------------------------------------
+-- [2.3.2] Main Table 2: Publisher (Publisher Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Add a new publisher
+INSERT INTO Publisher (Publisher_ID, Publisher_Name, Address, Contact_Email)
+VALUES ('PUB16', 'Addison-Wesley', 'Boston, MA, USA', 'contact@aw.com');
+
+-- UPDATE: Correct the publisher address
+UPDATE Publisher
+SET Address = 'Boston, Massachusetts, USA'
+WHERE Publisher_ID = 'PUB16';
+
+-- DELETE: Remove a publisher with no published titles (fk_book_publisher is RESTRICT)
+DELETE FROM Publisher
+WHERE Publisher_ID = 'PUB16';
+
+
+-- ---------------------------------------------------------------------
+-- [2.3.3] Main Table 3: Author (Author Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Add a new author
+INSERT INTO Author (Author_ID, Author_Name, Biography)
+VALUES ('AUTH19', 'Andrew S. Tanenbaum', 'Professor Emeritus of Computer Science at Vrije Universiteit Amsterdam.');
+
+-- UPDATE: Edit the author biography
+UPDATE Author
+SET Biography = 'Author of Modern Operating Systems and Computer Networks.'
+WHERE Author_ID = 'AUTH19';
+
+-- DELETE: Remove an author not linked to any title (fk_ba_author is RESTRICT)
+DELETE FROM Author
+WHERE Author_ID = 'AUTH19';
+
+
+-- ---------------------------------------------------------------------
+-- [2.3.4] Main Table 4: Book & Book_Author (Book Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Catalogue a new book title and assign ordered authors
+INSERT INTO Book (Book_ID, Category_ID, Publisher_ID, ISBN, Title, Publication_Year)
+VALUES ('B16', 'CAT01', 'PUB01', '978-0262046305', 'Introduction to Algorithms, 4th Edition', 2022);
+
+INSERT INTO Book_Author (Book_ID, Author_ID, Author_Order)
+VALUES ('B16', 'AUTH01', 1),
+       ('B16', 'AUTH16', 3);
+
+-- UPDATE: Correct the book title and reorder author position
+UPDATE Book
+SET Title = 'Introduction to Algorithms, Fourth Edition'
+WHERE Book_ID = 'B16';
+
+UPDATE Book_Author
+SET Author_Order = 2
+WHERE Book_ID = 'B16' AND Author_ID = 'AUTH16';
+
+-- DELETE: Unlink secondary author, then remove the book (fk_ba_book cascades remaining link)
+DELETE FROM Book_Author
+WHERE Book_ID = 'B16' AND Author_ID = 'AUTH16';
+
+DELETE FROM Book
+WHERE Book_ID = 'B16';
+
+
+-- ---------------------------------------------------------------------
+-- [2.3.5] Main Table 5: Book_Copy (Copy Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Add a second physical copy of an existing title (B15)
+INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes)
+VALUES ('B15', 'C02', 'Shelf G - Row 2', 'Available', 'New');
+
+-- UPDATE: Record physical damage found during shelf inspection
+UPDATE Book_Copy
+SET Status = 'Damaged', Condition_Notes = 'Damaged: water damage on the cover'
+WHERE Book_ID = 'B15' AND Copy_ID = 'C02';
+
+-- DELETE: Write off a copy that has never been borrowed (FK_loandetail_borrowed_BookCopy is RESTRICT)
+DELETE FROM Book_Copy
+WHERE Book_ID = 'B15' AND Copy_ID = 'C02';
+
+
+-- ---------------------------------------------------------------------
+-- [2.3.6] Main Table 6: Member_Category (Membership Category Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Add a new membership tier
+INSERT INTO Member_Category (Member_Type_ID, Type_Name, Borrowing_Limit, Loan_Period)
+VALUES ('MC16', 'Short-Term Research Visitor', 4, 14);
+
+-- UPDATE: Adjust borrowing limit and loan duration
+UPDATE Member_Category
+SET Borrowing_Limit = 5, Loan_Period = 17
+WHERE Member_Type_ID = 'MC16';
+
+-- DELETE: Remove a membership category with no assigned members (FK_Memberbelongto_category is RESTRICT)
+DELETE FROM Member_Category
+WHERE Member_Type_ID = 'MC16';
+
+
+-- ---------------------------------------------------------------------
+-- [2.3.7] Main Table 7: Member & Member_Phone (Member Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Register a new library member and record contact phone
+INSERT INTO Member (Member_ID, Member_Type_ID, Full_Name, Email, Identity_Card, Membership_Expiry_Date, Account_Status)
+VALUES ('M16', 'MC01', 'Nguyen Minh Tri', 'nmtri@hcmiu.edu.vn', '079205001016', '2027-08-31', 'Active');
+
+INSERT INTO Member_Phone (Member_ID, Phone)
+VALUES ('M16', '0909998816');
+
+-- UPDATE: Renew membership expiry date and update phone number
+UPDATE Member
+SET Membership_Expiry_Date = '2028-08-31'
+WHERE Member_ID = 'M16';
+
+UPDATE Member_Phone
+SET Phone = '0909998877'
+WHERE Member_ID = 'M16' AND Phone = '0909998816';
+
+-- DELETE: Remove child phone record first, then member with no loan history (FK_loantransactionMakeMember is RESTRICT)
+DELETE FROM Member_Phone
+WHERE Member_ID = 'M16' AND Phone = '0909998877';
+
+DELETE FROM Member
+WHERE Member_ID = 'M16';
+
+
+-- ---------------------------------------------------------------------
+-- [2.3.8] Main Table 8: Staff (Staff Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Add a staff member reporting to Head of Circulation (S03)
+INSERT INTO Staff (Staff_ID, Supervisor_ID, Full_Name, Position, Email)
+VALUES ('S16', 'S03', 'Pham Hoang Nam', 'Assistant Circulation Librarian', 'phnam@hcmiu.edu.vn');
+
+-- UPDATE: Reassign role and supervisor (Trigger 5 prevents self-supervision)
+UPDATE Staff
+SET Position = 'Reference Librarian', Supervisor_ID = 'S02'
+WHERE Staff_ID = 'S16';
+
+-- DELETE: Remove a staff record that has handled no loans (FK_loanhandlesStaffID is RESTRICT)
+DELETE FROM Staff
+WHERE Staff_ID = 'S16';
+
+
+-- ---------------------------------------------------------------------
+-- [2.3.9] Main Table 9: Reservation (Reservation Screen)
+-- ---------------------------------------------------------------------
+-- INSERT: Place a reservation for member M02 on fully loaned book B12
+INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, Status)
+VALUES ('RES16', 'M02', 'B12', '2026-10-23', 'Pending');
+
+-- UPDATE: Mark reservation as cancelled
+UPDATE Reservation
+SET Status = 'Cancelled'
+WHERE Reservation_ID = 'RES16';
+
+-- DELETE: Delete the cancelled reservation record
+DELETE FROM Reservation
+WHERE Reservation_ID = 'RES16';
+
+
+-- ---------------------------------------------------------------------
+-- [2.3.10] Main Tables 10 & 11: Loan_Transaction & Loan_Detail
+--          (Checkout and Return Screen — Master-Detail)
+-- ---------------------------------------------------------------------
+-- INSERT: Create a loan header and detail line (validated by Trigger 1 & Trigger 2)
+INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date)
+VALUES ('L16', 'M04', 'S05', '2026-10-20', '2026-10-30');
+
+INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status)
+VALUES ('L16', 'D01', 'B14', 'C01', NULL, 0, 'None');
+
+-- UPDATE: Renew the loan once and extend the due date
+UPDATE Loan_Detail
+SET Renewal_Count = 1
+WHERE Loan_ID = 'L16' AND Detail_ID = 'D01';
+
+UPDATE Loan_Transaction
+SET Due_Date = '2026-11-09'
+WHERE Loan_ID = 'L16';
+
+-- UPDATE: Record on-time book return (validated by Trigger 3)
+UPDATE Loan_Detail
+SET Return_Date = '2026-11-05'
+WHERE Loan_ID = 'L16' AND Detail_ID = 'D01';
+
+-- DELETE: Remove the demo loan (child detail line first, then parent header)
+DELETE FROM Loan_Detail
+WHERE Loan_ID = 'L16' AND Detail_ID = 'D01';
+
+DELETE FROM Loan_Transaction
+WHERE Loan_ID = 'L16';
+
+
+-- =====================================================================
+-- [2.3.T] TRANSACTIONS (COMMIT & ROLLBACK)
+-- Ensures atomicity when updating multiple related tables together.
+-- =====================================================================
+
+-- [2.3.T1] TRANSACTION 1 (COMMIT): Atomic Book Checkout Across 3 Tables
+START TRANSACTION;
+
+INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date)
+VALUES ('L17', 'M04', 'S05', '2026-10-20', '2026-10-30');
+
+INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status)
+VALUES ('L17', 'D01', 'B14', 'C01', NULL, 0, 'None');
+
+UPDATE Book_Copy
+SET Status = 'Borrowed'
+WHERE Book_ID = 'B14' AND Copy_ID = 'C01';
+
+COMMIT;
+
+
+-- [2.3.T2] TRANSACTION 2 (ROLLBACK): Aborted Return & Fine Payment on L03
+START TRANSACTION;
+
+-- 1. Record the return date
+UPDATE Loan_Detail
+SET Return_Date = '2026-10-23'
+WHERE Loan_ID = 'L03' AND Detail_ID = 'D01' AND Return_Date IS NULL;
+
+-- 2. Mark fine as paid
+UPDATE Loan_Detail
+SET Payment_Status = 'Paid'
+WHERE Loan_ID = 'L03' AND Detail_ID = 'D01';
+
+-- 3. Release the physical copy back to Available
+UPDATE Book_Copy
+SET Status = 'Available'
+WHERE Book_ID = 'B02' AND Copy_ID = 'C02';
+
+-- 4. Simulate payment gateway failure -> rollback all changes across both tables
+ROLLBACK;
+
+
+-- Cleanup baseline state for ('B14', 'C01') and L17 (child detail first, then parent header)
+START TRANSACTION;
+
+DELETE FROM Loan_Detail
+WHERE Loan_ID = 'L17' AND Detail_ID = 'D01';
+
+DELETE FROM Loan_Transaction
+WHERE Loan_ID = 'L17';
+
+UPDATE Book_Copy
+SET Status = 'Available'
+WHERE Book_ID = 'B14' AND Copy_ID = 'C01';
+
+COMMIT;

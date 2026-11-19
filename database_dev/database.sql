@@ -406,7 +406,6 @@ INNER JOIN Loan_Transaction lt
  
  
  
- 
 --  Member_Category (15 rows)
 INSERT INTO Member_Category (Member_Type_ID, Type_Name, Borrowing_Limit, Loan_Period) VALUES
 ('MC01', 'Undergraduate Student', 5, 10),
@@ -582,24 +581,23 @@ INSERT INTO Staff (Staff_ID, Supervisor_ID, Full_Name, Position, Email) VALUES
 -- member's category, and most loans below use that full period (MC01 10 days,
 -- MC02 15, MC03 and MC04 20, MC05 18, MC08 7). L13 and L14 are shorter loans.
 -- L12 was renewed once, which adds one more period (Renewal_Count in Loan_Detail).
+ 
 INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date) VALUES
 ('L01', 'M01', 'S05', '2026-01-15', '2026-01-25'),
 ('L02', 'M02', 'S05', '2026-02-10', '2026-02-25'),
 ('L03', 'M01', 'S06', '2026-09-01', '2026-09-11'),
 ('L04', 'M03', 'S06', '2026-03-05', '2026-03-25'),
 ('L05', 'M04', 'S07', '2026-04-12', '2026-04-22'),
-('L06', 'M01', 'S07', CURRENT_DATE - INTERVAL 5 DAY, CURRENT_DATE + INTERVAL 5 DAY),   -- not due yet
+('L06', 'M01', 'S07', '2026-09-10', '2026-09-20'),
 ('L07', 'M05', 'S08', '2026-05-20', '2026-06-09'),
 ('L08', 'M06', 'S08', '2026-06-15', '2026-07-03'),
-('L09', 'M07', 'S09', CURRENT_DATE - INTERVAL 2 DAY, CURRENT_DATE + INTERVAL 8 DAY),   -- not due yet
+('L09', 'M07', 'S09', '2026-09-05', '2026-09-15'),
 ('L10', 'M08', 'S09', '2026-07-10', '2026-07-25'),
 ('L11', 'M09', 'S05', '2026-09-12', '2026-09-19'),  -- M09 was Active on 2026-09-12; suspended later for this overdue loan
 ('L12', 'M10', 'S06', '2026-08-01', '2026-09-10'),  -- 20 days, renewed once for 20 more
 ('L13', 'M11', 'S07', '2026-08-18', '2026-09-01'),
 ('L14', 'M12', 'S08', '2026-08-22', '2026-09-05'),
-('L15', 'M13', 'S09', '2026-10-10', '2026-10-30'),
-('L18', 'M05', 'S07', CURRENT_DATE - INTERVAL 5 DAY, CURRENT_DATE + INTERVAL 15 DAY),  -- MC04: 20 days
-('L19', 'M08', 'S08', CURRENT_DATE - INTERVAL 2 DAY, CURRENT_DATE + INTERVAL 13 DAY);  -- MC02: 15 days
+('L15', 'M13', 'S09', '2026-10-10', '2026-10-30');
  
 -- Book_Copy (21 rows)
 -- Condition_Notes record only the physical state of a copy, on one scale:
@@ -626,8 +624,8 @@ INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes
 ('B08', 'C01', 'Shelf D - Row 2', 'Available', 'Good'),
 ('B09', 'C01', 'Shelf E - Row 1', 'Available', 'Good'),   -- never lent, so B09 was never fully on loan
 ('B09', 'C02', 'Shelf E - Row 1', 'Borrowed',  'Good'),   -- out on loan L09
-('B10', 'C01', 'Shelf E - Row 2', 'Borrowed',  'Fair: cover slightly worn'),   -- out on loan L18
-('B11', 'C01', 'Shelf F - Row 1', 'Borrowed',  'Good'),                        -- out on loan L19
+('B10', 'C01', 'Shelf E - Row 2', 'Available', 'Fair: cover slightly worn'),
+('B11', 'C01', 'Shelf F - Row 1', 'Available', 'Good'),
 ('B12', 'C01', 'Shelf F - Row 2', 'Borrowed',  'Good'),   -- out on loan L11
 ('B13', 'C01', 'Shelf F - Row 3', 'Borrowed',  'Good'),   -- out on loan L15
 ('B14', 'C01', 'Shelf G - Row 1', 'Available', 'New'),    -- never lent
@@ -653,22 +651,21 @@ INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, S
 ('RES06', 'M13', 'B10', '2026-07-20', 'Cancelled'),  -- On the Origin of Species: only copy out on loan L10
 ('RES07', 'M02', 'B03', '2026-09-02', 'Confirmed'),  -- Clean Code: both copies were out; C01 came back on 2026-09-04 and is kept at the desk for M02
 ('RES08', 'M12', 'B02', '2026-09-03', 'Cancelled'),  -- Algorithms Unlocked: both copies were out; C01 came back on 2026-09-06, but M12 never picked it up
---  members still waiting
-('RES09', 'M05', 'B06', CURRENT_DATE - INTERVAL 4 DAY, 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
+-- October: members still waiting
+('RES09', 'M05', 'B06', '2026-10-05', 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
 ('RES10', 'M06', 'B12', '2026-10-06', 'Pending'),    -- Hamlet: only copy out on loan L11; 1st in the queue
 ('RES11', 'M03', 'B03', '2026-10-09', 'Pending'),    -- Clean Code: C01 kept for RES07, C02 out on loan L03; next after RES07
 ('RES12', 'M08', 'B13', '2026-10-12', 'Pending'),    -- Pride and Prejudice: only copy out on loan L15; 1st in the queue
 ('RES13', 'M12', 'B12', '2026-10-12', 'Pending'),    -- Hamlet: 2nd in the queue, after RES10
-('RES14', 'M04', 'B06', CURRENT_DATE - INTERVAL 1 DAY, 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
+('RES14', 'M04', 'B06', '2026-10-14', 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
 ('RES15', 'M11', 'B13', '2026-10-18', 'Pending');    -- Pride and Prejudice: 2nd in the queue, after RES12
  
--- Loan_Detail (20 rows)
+-- Loan_Detail (18 rows)
 -- The fine of a line is not stored: the view Loan_Detail_Fine computes it
 -- (5,000 VND per day late). Payment_Status says whether that fine is
 -- Unpaid, Paid or Waived, and is 'None' for a copy returned on time.
--- Copies still out (Return_Date NULL): lines already past their due date
--- (L03, L11, L15) are 'Unpaid'; lines not yet due (L06, L09, L18, L19,
--- dates relative to CURRENT_DATE) are 'None'.
+-- Copies still out (Return_Date NULL) were already overdue when this data was
+-- entered, so they are marked 'Unpaid'; L15 was not due yet, so it is 'None'.
  
 INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status) VALUES
 ('L01', 'D01', 'B01', 'C01', '2026-01-24', 0, 'None'),
@@ -679,18 +676,16 @@ INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Rene
 ('L03', 'D02', 'B03', 'C02', NULL,         0, 'Unpaid'),
 ('L04', 'D01', 'B04', 'C01', '2026-04-02', 0, 'Unpaid'),   -- 8 days late: 40,000 VND
 ('L05', 'D01', 'B05', 'C01', '2026-04-30', 0, 'Unpaid'),   -- 8 days late: 40,000 VND
-('L06', 'D01', 'B06', 'C02', NULL,         0, 'None'),
+('L06', 'D01', 'B06', 'C02', NULL,         0, 'Unpaid'),
 ('L07', 'D01', 'B07', 'C01', '2026-06-03', 0, 'None'),
 ('L08', 'D01', 'B08', 'C01', '2026-07-13', 0, 'Unpaid'),   -- 10 days late: 50,000 VND
-('L09', 'D01', 'B09', 'C02', NULL,         0, 'None'),
+('L09', 'D01', 'B09', 'C02', NULL,         0, 'Unpaid'),
 ('L10', 'D01', 'B10', 'C01', '2026-07-30', 0, 'Paid'),     -- 5 days late: 25,000 VND
 ('L11', 'D01', 'B12', 'C01', NULL,         0, 'Unpaid'),
 ('L12', 'D01', 'B01', 'C01', '2026-09-10', 1, 'None'),     -- renewed once, returned on the due date
 ('L13', 'D01', 'B02', 'C01', '2026-09-06', 0, 'Waived'),   -- 5 days late: 25,000 VND, waived
 ('L14', 'D01', 'B03', 'C01', '2026-09-04', 0, 'None'),
-('L15', 'D01', 'B13', 'C01', NULL,         0, 'Unpaid'),
-('L18', 'D01', 'B10', 'C01', NULL,         0, 'None'),
-('L19', 'D01', 'B11', 'C01', NULL,         0, 'None');
+('L15', 'D01', 'B13', 'C01', NULL,         0, 'None');
  
  
  
@@ -941,293 +936,4 @@ DELIMITER ;
  
  
  
--- =====================================================================
--- UPDATE STATEMENTS USED BY THE APPLICATION
--- Requirement 2.3: "at least one INSERT, one UPDATE and one DELETE for
--- each main table".
---
--- Main tables (our reading of the requirement): the 11 tables that map an
--- entity set of the ER diagram. Each one is edited through its own screen
--- in the Java application.
---   Catalogue    Category, Publisher, Author, Book, Book_Copy
---   Members      Member_Category, Member, Staff
---   Circulation  Reservation, Loan_Transaction, Loan_Detail
 
-
--- ---------------------------------------------------------------------
--- Main table 1: Category                              (Category screen)
--- ---------------------------------------------------------------------
--- INSERT: add a new subject
-INSERT INTO Category (Category_ID, Category_Name, Description)
-VALUES ('CAT16', 'Data Science', 'Big data analytics, data mining, and visualization.');
-
--- UPDATE: edit the description of the subject
-UPDATE Category
-SET Description = 'Big data analytics, statistical modeling, and visualization.'
-WHERE Category_ID = 'CAT16';
-
--- DELETE: remove a subject that no title uses
--- (fk_book_category is RESTRICT: a subject still in use cannot be deleted)
-DELETE FROM Category
-WHERE Category_ID = 'CAT16';
-
-
--- ---------------------------------------------------------------------
--- Main table 2: Publisher                            (Publisher screen)
--- ---------------------------------------------------------------------
--- INSERT: add a publisher
-INSERT INTO Publisher (Publisher_ID, Publisher_Name, Address, Contact_Email)
-VALUES ('PUB16', 'Addison-Wesley', 'Boston, MA, USA', 'contact@aw.com');
-
--- UPDATE: correct the address
-UPDATE Publisher
-SET Address = 'Boston, Massachusetts, USA'
-WHERE Publisher_ID = 'PUB16';
-
--- DELETE: remove a publisher that has no titles
--- (fk_book_publisher is RESTRICT)
-DELETE FROM Publisher
-WHERE Publisher_ID = 'PUB16';
-
-
--- ---------------------------------------------------------------------
--- Main table 3: Author                                  (Author screen)
--- ---------------------------------------------------------------------
--- INSERT: add an author
-INSERT INTO Author (Author_ID, Author_Name, Biography)
-VALUES ('AUTH19', 'Andrew S. Tanenbaum', 'Professor Emeritus of Computer Science at Vrije Universiteit Amsterdam.');
-
--- UPDATE: edit the biography
-UPDATE Author
-SET Biography = 'Author of Modern Operating Systems and Computer Networks.'
-WHERE Author_ID = 'AUTH19';
-
--- DELETE: remove an author who is linked to no title
--- (fk_ba_author is RESTRICT)
-DELETE FROM Author
-WHERE Author_ID = 'AUTH19';
-
-
--- ---------------------------------------------------------------------
--- Main table 4: Book, with its authors in Book_Author       (Book screen)
--- ---------------------------------------------------------------------
--- INSERT: catalogue a new title, then link its authors
--- (Leiserson is entered at position 3 by mistake)
-INSERT INTO Book (Book_ID, Category_ID, Publisher_ID, ISBN, Title, Publication_Year)
-VALUES ('B16', 'CAT01', 'PUB01', '978-0262046305', 'Introduction to Algorithms, 4th Edition', 2022);
-
-INSERT INTO Book_Author (Book_ID, Author_ID, Author_Order)
-VALUES ('B16', 'AUTH01', 1),
-       ('B16', 'AUTH16', 3);
-
--- UPDATE: correct the title, then correct Leiserson's position to 2
-UPDATE Book
-SET Title = 'Introduction to Algorithms, Fourth Edition'
-WHERE Book_ID = 'B16';
-
-UPDATE Book_Author
-SET Author_Order = 2
-WHERE Book_ID = 'B16' AND Author_ID = 'AUTH16';
-
--- DELETE: unlink one author, then remove the title. The title has no
--- copies, and its remaining author link goes with it (fk_ba_book is CASCADE).
-DELETE FROM Book_Author
-WHERE Book_ID = 'B16' AND Author_ID = 'AUTH16';
-
-DELETE FROM Book
-WHERE Book_ID = 'B16';
-
-
--- ---------------------------------------------------------------------
--- Main table 5: Book_Copy                                (Copy screen)
--- ---------------------------------------------------------------------
--- INSERT: add a second copy of an existing title (B15 '1984')
-INSERT INTO Book_Copy (Book_ID, Copy_ID, Shelf_Location, Status, Condition_Notes)
-VALUES ('B15', 'C02', 'Shelf G - Row 2', 'Available', 'New');
-
--- UPDATE: record damage found during a shelf check
-UPDATE Book_Copy
-SET Status = 'Damaged', Condition_Notes = 'Damaged: water damage on the cover'
-WHERE Book_ID = 'B15' AND Copy_ID = 'C02';
-
--- DELETE: write the copy off; allowed because it was never lent
--- (FK_loandetail_borrowed_BookCopy is RESTRICT)
-DELETE FROM Book_Copy
-WHERE Book_ID = 'B15' AND Copy_ID = 'C02';
-
-
--- ---------------------------------------------------------------------
--- Main table 6: Member_Category               (Membership category screen)
--- ---------------------------------------------------------------------
--- INSERT: add a membership category
-INSERT INTO Member_Category (Member_Type_ID, Type_Name, Borrowing_Limit, Loan_Period)
-VALUES ('MC16', 'Short-Term Research Visitor', 4, 14);
-
--- UPDATE: change its borrowing limit and loan period
-UPDATE Member_Category
-SET Borrowing_Limit = 5, Loan_Period = 17
-WHERE Member_Type_ID = 'MC16';
-
--- DELETE: remove a category that no member belongs to
--- (FK_Memberbelongto_category is RESTRICT)
-DELETE FROM Member_Category
-WHERE Member_Type_ID = 'MC16';
-
-
--- ---------------------------------------------------------------------
--- Main table 7: Member, with its phones in Member_Phone   (Member screen)
--- ---------------------------------------------------------------------
--- INSERT: register a new member and record a phone number
-INSERT INTO Member (Member_ID, Member_Type_ID, Full_Name, Email, Identity_Card, Membership_Expiry_Date, Account_Status)
-VALUES ('M16', 'MC01', 'Nguyen Minh Tri', 'nmtri@hcmiu.edu.vn', '079205001016', '2027-08-31', 'Active');
-
-INSERT INTO Member_Phone (Member_ID, Phone)
-VALUES ('M16', '0909998816');
-
--- UPDATE: renew the membership card for one more year, then change the
--- phone number
-UPDATE Member
-SET Membership_Expiry_Date = '2028-08-31'
-WHERE Member_ID = 'M16';
-
-UPDATE Member_Phone
-SET Phone = '0909998877'
-WHERE Member_ID = 'M16' AND Phone = '0909998816';
-
--- DELETE: remove the phone number, then the member; allowed because the
--- member has no loans (FK_loantransactionMakeMember is RESTRICT)
-DELETE FROM Member_Phone
-WHERE Member_ID = 'M16' AND Phone = '0909998877';
-
-DELETE FROM Member
-WHERE Member_ID = 'M16';
-
-
--- ---------------------------------------------------------------------
--- Main table 8: Staff                                    (Staff screen)
--- ---------------------------------------------------------------------
--- INSERT: add a staff member under the Head of Circulation (S03)
-INSERT INTO Staff (Staff_ID, Supervisor_ID, Full_Name, Position, Email)
-VALUES ('S16', 'S03', 'Pham Hoang Nam', 'Assistant Circulation Librarian', 'phnam@hcmiu.edu.vn');
-
--- UPDATE: transfer to the reference team under S02
--- (Trigger 5 checks that S16 is not made their own supervisor)
-UPDATE Staff
-SET Position = 'Reference Librarian', Supervisor_ID = 'S02'
-WHERE Staff_ID = 'S16';
-
--- DELETE: remove a staff member who handled no loans
--- (FK_loanhandlesStaffID is RESTRICT)
-DELETE FROM Staff
-WHERE Staff_ID = 'S16';
-
-
--- ---------------------------------------------------------------------
--- Main table 9: Reservation                        (Reservation screen)
--- ---------------------------------------------------------------------
--- INSERT: M02 reserves B12, whose only copy is out on loan L11
--- (the Java application checks that the title is fully on loan)
-INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, Status)
-VALUES ('RES16', 'M02', 'B12', '2026-10-23', 'Pending');
-
--- UPDATE: the member cancels the reservation
-UPDATE Reservation
-SET Status = 'Cancelled'
-WHERE Reservation_ID = 'RES16';
-
--- DELETE: remove the cancelled reservation
-DELETE FROM Reservation
-WHERE Reservation_ID = 'RES16';
-
-
--- ---------------------------------------------------------------------
--- Main tables 10 and 11: Loan_Transaction (header) and Loan_Detail (lines)
---                                  (Checkout and return screen, master-detail)
--- Changing Book_Copy.Status together with the loan is shown in
--- Transaction 1 below.
--- ---------------------------------------------------------------------
--- INSERT: M04 borrows copy B14-C01 for 10 days
--- (Trigger 1 checks the header, Trigger 2 checks the line)
-INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date)
-VALUES ('L16', 'M04', 'S05', '2026-10-20', '2026-10-30');
-
-INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status)
-VALUES ('L16', 'D01', 'B14', 'C01', NULL, 0, 'None');
-
--- UPDATE: renew the copy once and move the due date to 2026-11-09
--- (20 days in total, within two loan periods of category MC01)
-UPDATE Loan_Detail
-SET Renewal_Count = 1
-WHERE Loan_ID = 'L16' AND Detail_ID = 'D01';
-
-UPDATE Loan_Transaction
-SET Due_Date = '2026-11-09'
-WHERE Loan_ID = 'L16';
-
--- UPDATE: record the return on 2026-11-05, before the due date, so no
--- fine is needed (Trigger 3 checks the return date and the fine)
-UPDATE Loan_Detail
-SET Return_Date = '2026-11-05'
-WHERE Loan_ID = 'L16' AND Detail_ID = 'D01';
-
--- DELETE: remove the demo loan, the line first and then the header.
--- In practice a loan is deleted only when it was entered by mistake;
--- returned loans are kept as history.
-DELETE FROM Loan_Detail
-WHERE Loan_ID = 'L16' AND Detail_ID = 'D01';
-
-DELETE FROM Loan_Transaction
-WHERE Loan_ID = 'L16';
-
-
--- =====================================================================
--- TRANSACTIONS
--- Requirement 2.3: "at least one operation that changes two tables
--- together and therefore runs inside a transaction with COMMIT and
--- ROLLBACK". Either every change of the operation is kept (COMMIT) or
--- none is (ROLLBACK).
--- =====================================================================
-
---  TRANSACTION 1 (COMMIT): Atomic Book Checkout across 3 tables
-START TRANSACTION;
- 
-INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date)
-VALUES ('L17', 'M04', 'S05', '2026-10-20', '2026-10-30');
- 
-INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status)
-VALUES ('L17', 'D01', 'B14', 'C01', NULL, 0, 'None');
- 
-UPDATE Book_Copy
-SET Status = 'Borrowed'
-WHERE Book_ID = 'B14' AND Copy_ID = 'C01';
- 
-COMMIT;
- 
---  TRANSACTION 2 (ROLLBACK): Cancelled Return & Fine Payment on L03
-START TRANSACTION;
- 
--- 1. Record the return 
-UPDATE Loan_Detail
-SET Return_Date = '2026-10-23'
-WHERE Loan_ID = 'L03' AND Detail_ID = 'D01' AND Return_Date IS NULL;
- 
--- 2. Pay the fine
-UPDATE Loan_Detail
-SET Payment_Status = 'Paid'
-WHERE Loan_ID = 'L03' AND Detail_ID = 'D01';
- 
--- 3. Release the physical copy
-UPDATE Book_Copy
-SET Status = 'Available'
-WHERE Book_ID = 'B02' AND Copy_ID = 'C02';
- 
--- 4. Payment gateway reports FAILURE -> undo changes to both tables (Atomicity)
-ROLLBACK;
- 
--- Restore baseline state for ('B14', 'C01') and L17 so sample data stays clean
-START TRANSACTION;
-DELETE FROM Loan_Transaction WHERE Loan_ID = 'L17';
-UPDATE Book_Copy
-SET Status = 'Available'
-WHERE Book_ID = 'B14' AND Copy_ID = 'C01';
-COMMIT;

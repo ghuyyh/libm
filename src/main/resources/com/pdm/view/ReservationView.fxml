@@ -75,10 +75,10 @@
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           </rowConstraints>
                            <children>
-                            <Button fx:id="add_btn" mnemonicParsing="false" text="Add new reservation+" GridPane.rowIndex="3" />
-                              <TextField promptText="Enter member ID" />
-                              <TextField layoutX="10.0" layoutY="13.0" promptText="Enter ISBN" GridPane.rowIndex="1" />
-                              <DatePicker GridPane.rowIndex="2" />
+                            <Button fx:id="add_btn" mnemonicParsing="false" onAction="#add" text="Add new reservation+" GridPane.rowIndex="3" />
+                              <TextField fx:id="new_memid" promptText="Enter member ID" />
+                              <TextField fx:id="new_isbn" layoutX="10.0" layoutY="13.0" promptText="Enter ISBN" GridPane.rowIndex="1" />
+                              <DatePicker fx:id="new_date" GridPane.rowIndex="2" />
                            </children>
                         </GridPane>
                      </children>
@@ -97,11 +97,13 @@
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           </rowConstraints>
                            <children>
-                              <ChoiceBox prefWidth="150.0" />
-                              <Button fx:id="fulfill_btn" disable="true" mnemonicParsing="false" text="Fulfill " GridPane.rowIndex="2" />
+                              <ChoiceBox fx:id="copy_select" prefWidth="150.0" />
+                              <Button fx:id="fulfill_btn" disable="true" mnemonicParsing="false" onAction="#fulfill" text="Fulfill " GridPane.rowIndex="2" />
                               <Label text="Select available copy" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+                              <TextField fx:id="fulfill_staff" promptText="Staff ID (e.g. S03)" GridPane.rowIndex="3" />
                            </children>
                         </GridPane>
                      </children>
@@ -122,6 +124,7 @@
                   <TableColumn fx:id="col_title" prefWidth="227.0" text="Title" />
                   <TableColumn fx:id="col_date" prefWidth="127.0" text="Date" />
                   <TableColumn fx:id="col_status" prefWidth="150.0" text="Status" />
+                  <TableColumn fx:id="col_available" prefWidth="130.0" text="Available Copies" />
                </columns>
             </TableView>
             <Button fx:id="cancel_btn" disable="true" mnemonicParsing="false" onAction="#cancel" text="Cancel this resevation" StackPane.alignment="BOTTOM_RIGHT" />

@@ -1,12 +1,12 @@
 package com.pdm.controller;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 
 import com.pdm.dao.ReservationDAO;
 import com.pdm.model.Reservation;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,7 +15,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -49,8 +49,8 @@ public class ReservationManage extends basecontrol {
     private TextField new_memid;
     @FXML
     private TextField new_isbn;
-    @FXML
-    private DatePicker new_date;
+    // @FXML
+    // private DatePicker new_date;
 
     // Fulfill tab
     @FXML
@@ -60,13 +60,15 @@ public class ReservationManage extends basecontrol {
 
     @FXML
     private TextField search_field;
+    @FXML
+    private Label noti_label;
 
     private final ObservableList<Reservation> reserList = FXCollections.observableArrayList();
     private final ReservationDAO reservationDAO = new ReservationDAO();
 
     @FXML
     public void initialize() {
-        new_date.setValue(LocalDate.now());
+        // new_date.setValue(LocalDate.now());
 
         cancel_btn.disableProperty().bind(
                 reser_table.getSelectionModel().selectedItemProperty().isNull());
@@ -86,11 +88,11 @@ public class ReservationManage extends basecontrol {
         copy_select.valueProperty().addListener((obs, oldValue, newValue) -> updateFulfillButton());
 
         refreshReserTable();
+        Platform.runLater(() -> confirm());
+
+        // auto confirm
     }
 
-    // ------------------------------------------------------------------
-    // Table loading / filtering
-    // ------------------------------------------------------------------
     private void refreshReserTable() {
         try {
             reserList.setAll(reservationDAO.getReser());
@@ -138,9 +140,6 @@ public class ReservationManage extends basecontrol {
                 || !"Pending".equals(selected.getStatus()));
     }
 
-    // ------------------------------------------------------------------
-    // Add new reservation (RS2 INSERT)
-    // ------------------------------------------------------------------
     @FXML
     public void add() {
         String memberId = text(new_memid);
@@ -150,36 +149,33 @@ public class ReservationManage extends basecontrol {
             return;
         }
 
-        LocalDate date = new_date.getValue() == null ? LocalDate.now() : new_date.getValue();
         try {
             String bookId = reservationDAO.findBookIdByIsbn(isbn);
             if (bookId == null) {
                 showError("Book not found", "No book with ISBN " + isbn + ".");
                 return;
             }
-            String reservationId = reservationDAO.addReser(memberId, bookId, date);
+            String reservationId = reservationDAO.addReser(memberId, bookId);
             new_memid.clear();
             new_isbn.clear();
-            new_date.setValue(LocalDate.now());
             refreshReserTable();
             showInfo("Reservation " + reservationId + " created.");
+            confirm();
         } catch (SQLException e) {
             showError("Cannot add reservation", e.getMessage());
         }
     }
 
-    // ------------------------------------------------------------------
-    // Cancel pending reservation (RS2 status update)
-    // ------------------------------------------------------------------
     @FXML
     public void cancel() {
         Reservation selected = reser_table.getSelectionModel().getSelectedItem();
+
         if (selected == null) {
             showError("No selection", "Please select a reservation to cancel.");
             return;
         }
-        if (!"Pending".equals(selected.getStatus())) {
-            showError("Cannot cancel", "Only pending reservations can be canceled.");
+        if (!"Pending".equals(selected.getStatus()) && !"Confirmed".equals(selected.getStatus())) {
+            showError("Cannot cancel", "Only pending or confirmed reservations can be canceled.");
             return;
         }
 
@@ -197,23 +193,22 @@ public class ReservationManage extends basecontrol {
             }
             refreshReserTable();
             showInfo("Reservation " + selected.getId() + " canceled.");
+            confirm();
         } catch (SQLException e) {
             showError("Cannot cancel reservation", e.getMessage());
         }
+
     }
 
-    // ------------------------------------------------------------------
-    // Fulfill reservation: create loan, mark copy borrowed, close reservation
-    // ------------------------------------------------------------------
     @FXML
     public void fulfill() {
         Reservation selected = reser_table.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showError("No selection", "Please select a reservation to fulfill.");
+            showError("No selection", "Please select a reservation to complete.");
             return;
         }
-        if (!"Pending".equals(selected.getStatus())) {
-            showError("Cannot fulfill", "Only pending reservations can be fulfilled.");
+        if (!"Confirmed".equals(selected.getStatus())) {
+            showError("Cannot complete", "Only confirmed reservations can be completed.");
             return;
         }
         String copyId = copy_select.getValue();
@@ -229,11 +224,37 @@ public class ReservationManage extends basecontrol {
 
         try {
             String loanId = reservationDAO.fulfillReser(
-                    selected.getId(), selected.getMemid(), selected.getBookid(), copyId, staffId);
+                    selected.getId(), selected.getMemid(), selected.getBookid(), staffId);
             refreshReserTable();
             showInfo("Reservation fulfilled. Loan " + loanId + " created (copy " + copyId + ").");
         } catch (SQLException e) {
             showError("Cannot fulfill reservation", e.getMessage());
+        }
+    }
+
+    public void confirm() {
+
+        int confirmedCount = 0;
+        try {
+            for (Reservation reservation : reserList) {
+                if ("Pending".equals(reservation.getStatus())) {
+                    if (reservationDAO.confirm(reservation.getId(), reservation.getBookid())) {
+                        confirmedCount++;
+                    }
+                }
+            }
+            refreshReserTable();
+            if (confirmedCount > 0) {
+                noti_label.setText("Notification: " + confirmedCount
+                        + " reservations successfully automatically confirmed.");
+                showInfo(confirmedCount + " reservations successfully automatically confirmed.");
+            }
+            if (confirmedCount == 0) {
+                noti_label.setText("Notification: No reservations were automatically confirmed.");
+                showInfo("No reservations were automatically confirmed.");
+            }
+        } catch (SQLException e) {
+            noti_label.setText("Notification: Some reservations could not be confirmed automatically.");
         }
     }
 

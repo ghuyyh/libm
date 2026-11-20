@@ -177,7 +177,7 @@ public class TitleCopyManage extends basecontrol {
         title_count.setText(bookList.size() + " Titles");
         // choicebox copy status
         copy_status_choice
-                .setItems(FXCollections.observableArrayList("Available", "Borrowed", "Reserved", "Damaged", "Lost"));
+                .setItems(FXCollections.observableArrayList("Available", "Damaged", "Lost"));
         copy_status_choice.setValue("Available");
         List<Author> authors = authorDAO.get_all_auth();
         // combobox
@@ -491,6 +491,13 @@ public class TitleCopyManage extends basecontrol {
         }
         if (shelf_field.getText().isEmpty() || shelf_field.getText().length() > 100) {
             showError("Shelf location cannot be empty and must be less than 100 characters.");
+            return;
+        }
+
+        // can not be same location
+        if (bookCopyDAO.get_copy(selectedBook.getBookID()).stream()
+                .anyMatch(copy -> copy.getShelf_Location().equals(shelf_field.getText()))) {
+            showError("A copy with this shelf location already exists");
             return;
         }
 

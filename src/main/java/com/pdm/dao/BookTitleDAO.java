@@ -272,6 +272,7 @@ public class BookTitleDAO {
         return "PUB01";
     }
 
+    
     // AI generated
     public String BookDeleteChecker(String bookId) {
         String SQL = "SELECT (SELECT COUNT(*) FROM Book WHERE Book_ID = ?) AS title_exists, "

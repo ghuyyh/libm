@@ -2,7 +2,6 @@ package com.pdm.controller;
 
 import com.pdm.dao.FineDAO;
 import com.pdm.model.Fine;
-import javafx.scene.control.TextField;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,6 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 public class FinePaymentManage extends basecontrol {
@@ -122,7 +122,9 @@ public class FinePaymentManage extends basecontrol {
 
             boolean updateSuccess = fineDAO.updatePaymentStatus(loanId, status, detailId);
             if (updateSuccess) {
-                showError("Payment status updated successfully.");
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setContentText("Payment processed successfully.");
+                alert.show();
                 refreshFineTable();
             } else {
                 showError("Failed to process payment.");

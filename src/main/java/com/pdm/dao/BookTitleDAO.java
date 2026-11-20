@@ -313,4 +313,36 @@ public class BookTitleDAO {
         return null;
     }
 
+    public boolean check_publisher_has_any_book(String publisherId) {
+        String sql = "SELECT COUNT(*) AS book_count FROM Book WHERE Publisher_ID = ?;";
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setString(1, publisherId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt("book_count");
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean deletePublisher(String publisherId) {
+        String sql = "DELETE FROM Publisher WHERE Publisher_ID = ?;";
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setString(1, publisherId);
+            int row_deleted = ps.executeUpdate();
+            return (row_deleted > 0);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
 }

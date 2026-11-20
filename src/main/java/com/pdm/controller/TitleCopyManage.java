@@ -320,8 +320,8 @@ public class TitleCopyManage extends basecontrol {
             return;
         }
         int publishyear = Integer.parseInt(year_field.getText());
-        if (publishyear < 1000 || publishyear > Year.now().getValue()) {
-            error = "Publish year must be between 1000 and the current year.";
+        if (publishyear < 1450 || publishyear > Year.now().getValue()) {
+            error = "Publish year must be between 1450 and the current year.";
             showError(error);
             return;
         }
@@ -693,6 +693,34 @@ public class TitleCopyManage extends basecontrol {
             return;
         }
         refreshAuthorTable(selectedBook.getBookID());
+    }
+
+    @FXML
+    private void deletePublisher() {
+        Publisher selectedPublisher = publisher_table.getSelectionModel().getSelectedItem();
+        if (selectedPublisher == null) {
+            showError("Please select a publisher to delete.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setContentText("Are you sure you want to delete this publisher?");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            if (bookTitleDAO.check_publisher_has_any_book(selectedPublisher.getPublisher_ID())) {
+                showError("Cannot delete publisher because it has existing book titles.");
+                return;
+            }
+            boolean success = bookTitleDAO.deletePublisher(selectedPublisher.getPublisher_ID());
+            if (success) {
+                refreshPublisherTable();
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setContentText("Publisher deleted successfully.");
+                alert.show();
+            } else {
+                showError("Failed to delete publisher.");
+            }
+        }
     }
 
     @FXML

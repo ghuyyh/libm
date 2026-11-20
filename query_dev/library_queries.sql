@@ -348,10 +348,79 @@ JOIN Member m ON r.Member_ID = m.Member_ID
 JOIN Book b ON r.Book_ID = b.Book_ID
 ORDER BY r.Reservation_Date ASC;
 
--- RS2. Insert new reservation / Update reservation status / Delete reservation
-INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, Status) VALUES (?, ?, ?, CURRENT_DATE, 'Pending');
-UPDATE Reservation SET Status = ? WHERE Reservation_ID = ?;
-DELETE FROM Reservation WHERE Reservation_ID = ?;
+-- RS2. Create a new reservation (Default status is 'Pending')
+INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, Status)
+VALUES (?, ?, ?, CURRENT_DATE, 'Pending');
+
+-- RS3. Confirm Reservation (Execute both statements in ONE JDBC transaction)
+-- Step 1: Reserve 1 available physical copy of the book (Check executeUpdate() > 0; if 0, no copy available -> rollback)
+UPDATE Book_Copy
+SET Status = 'Reserved'
+WHERE Book_ID = ?
+  AND Status = 'Available'
+ORDER BY Copy_ID ASC
+LIMIT 1;
+
+-- Step 2: Update reservation status from 'Pending' to 'Confirmed'
+UPDATE Reservation
+SET Status = 'Confirmed'
+WHERE Reservation_ID = ?
+  AND Status = 'Pending';
+
+-- RS4. Cancel Reservation (Execute in ONE JDBC transaction)
+-- Step 1 (ONLY run this in Java if the reservation's current status is 'Confirmed'):
+-- Release 1 'Reserved' copy of this book back to 'Available'
+UPDATE Book_Copy
+SET Status = 'Available'
+WHERE Book_ID = ?
+  AND Status = 'Reserved'
+ORDER BY Copy_ID ASC
+LIMIT 1;
+
+-- Step 2 (Always run): Set reservation status to 'Cancelled'
+UPDATE Reservation
+SET Status = 'Cancelled'
+WHERE Reservation_ID = ?
+  AND Status IN ('Pending', 'Confirmed');
+
+-- RS5. Complete Reservation -> Convert to Active Loan (Execute all 5 steps in ONE JDBC transaction)
+-- Step 1: Lock and retrieve 1 'Reserved' Copy_ID for this Book_ID (Abort/rollback if ResultSet is empty)
+SELECT Copy_ID
+FROM Book_Copy
+WHERE Book_ID = ?
+  AND Status = 'Reserved'
+ORDER BY Copy_ID ASC
+LIMIT 1
+FOR UPDATE;
+
+-- Step 2: Temporarily set copy to 'Available' so Trigger 2 allows inserting into `Loan_Detail`
+UPDATE Book_Copy
+SET Status = 'Available'
+WHERE Book_ID = ?
+  AND Copy_ID = ?
+  AND Status = 'Reserved';
+
+-- Step 3: Create Loan_Transaction header (automatically calculates Due_Date from Member_Category.Loan_Period)
+INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date)
+SELECT ?, ?, ?, CURRENT_DATE, DATE_ADD(CURRENT_DATE, INTERVAL mc.Loan_Period DAY)
+FROM Member m
+JOIN Member_Category mc ON m.Member_Type_ID = mc.Member_Type_ID
+WHERE m.Member_ID = ?;
+
+-- Step 4: Create Loan_Detail line item (Trigger 2 validates borrowing limit & copy availability)
+INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Renewal_Count, Payment_Status)
+VALUES (?, ?, ?, ?, NULL, 0, 'None');
+
+-- Step 5: Mark physical copy as 'Borrowed' and reservation as 'Completed'
+UPDATE Book_Copy
+SET Status = 'Borrowed'
+WHERE Book_ID = ?
+  AND Copy_ID = ?;
+
+UPDATE Reservation
+SET Status = 'Completed'
+WHERE Reservation_ID = ?
+  AND Status = 'Confirmed';
 
 
 -- ============================================================================

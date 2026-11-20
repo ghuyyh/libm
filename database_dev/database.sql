@@ -580,10 +580,10 @@ INSERT INTO Staff (Staff_ID, Supervisor_ID, Full_Name, Position, Email) VALUES
 ('S14', 'S04', 'Cao Thai Son', 'Acquisitions Specialist', 'ctson@hcmiu.edu.vn'),
 ('S15', 'S02', 'Huynh Thuc Khang', 'IT Systems Librarian', 'htkhang@hcmiu.edu.vn');
 
---  Loan_Transaction (15 rows)
+--  Loan_Transaction (17 rows)
 -- Trigger 1 allows a Due_Date of at most Borrow_Date + the Loan_Period of the
 -- member's category, and most loans below use that full period (MC01 10 days,
--- MC02 15, MC03 and MC04 20, MC05 18, MC08 7). L13 and L14 are shorter loans.
+-- MC02 15, MC03 and MC04 20, MC05 18, MC08 7).
 -- L12 was renewed once, which adds one more period (Renewal_Count in Loan_Detail).
 INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Date) VALUES
 ('L01', 'M01', 'S05', '2026-01-15', '2026-01-25'),
@@ -598,8 +598,8 @@ INSERT INTO Loan_Transaction (Loan_ID, Member_ID, Staff_ID, Borrow_Date, Due_Dat
 ('L10', 'M08', 'S09', '2026-07-10', '2026-07-25'),
 ('L11', 'M09', 'S05', '2026-09-12', '2026-09-19'),  -- M09 was Active on 2026-09-12; suspended later for this overdue loan
 ('L12', 'M10', 'S06', '2026-08-01', '2026-09-10'),  -- 20 days, renewed once for 20 more
-('L13', 'M11', 'S07', '2026-08-18', '2026-09-01'),
-('L14', 'M12', 'S08', '2026-08-22', '2026-09-05'),
+('L13', 'M11', 'S07', '2026-08-12', '2026-09-01'),
+('L14', 'M12', 'S08', '2026-08-19', '2026-09-05'),
 ('L15', 'M13', 'S09', '2026-10-10', '2026-10-30'),
 ('L18', 'M05', 'S07', CURRENT_DATE - INTERVAL 5 DAY, CURRENT_DATE + INTERVAL 15 DAY),  -- MC04: 20 days
 ('L19', 'M08', 'S08', CURRENT_DATE - INTERVAL 2 DAY, CURRENT_DATE + INTERVAL 13 DAY);  -- MC02: 15 days
@@ -656,24 +656,19 @@ INSERT INTO Reservation (Reservation_ID, Member_ID, Book_ID, Reservation_Date, S
 ('RES06', 'M13', 'B10', '2026-07-20', 'Cancelled'),  -- On the Origin of Species: only copy out on loan L10
 ('RES07', 'M02', 'B03', '2026-09-02', 'Confirmed'),  -- Clean Code: both copies were out; C01 came back on 2026-09-04 and is kept at the desk for M02
 ('RES08', 'M12', 'B02', '2026-09-03', 'Cancelled'),  -- Algorithms Unlocked: both copies were out; C01 came back on 2026-09-06, but M12 never picked it up
--- October: members still waiting
-('RES09', 'M05', 'B06', '2026-10-05', 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
 --  members still waiting
-('RES09', 'M05', 'B06', CURRENT_DATE - INTERVAL 4 DAY, 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
-('RES10', 'M06', 'B12', '2026-10-06', 'Pending'),    -- Hamlet: only copy out on loan L11; 1st in the queue
-('RES11', 'M03', 'B03', '2026-10-09', 'Pending'),    -- Clean Code: C01 kept for RES07, C02 out on loan L03; next after RES07
-('RES12', 'M08', 'B13', '2026-10-12', 'Pending'),    -- Pride and Prejudice: only copy out on loan L15; 1st in the queue
-('RES13', 'M12', 'B12', '2026-10-12', 'Pending'),    -- Hamlet: 2nd in the queue, after RES10
-('RES14', 'M04', 'B06', '2026-10-14', 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
-('RES14', 'M04', 'B06', CURRENT_DATE - INTERVAL 1 DAY, 'Pending'),    -- Mathematical Methods: 2nd in the queue, after RES09
-('RES15', 'M11', 'B13', '2026-10-18', 'Pending');    -- Pride and Prejudice: 2nd in the queue, after RES12
+('RES09', 'M06', 'B12', '2026-10-06', 'Pending'),    -- Hamlet: only copy out on loan L11; 1st in the queue
+('RES10', 'M03', 'B03', '2026-10-09', 'Pending'),    -- Clean Code: C01 kept for RES07, C02 out on loan L03; next after RES07
+('RES11', 'M08', 'B13', '2026-10-12', 'Pending'),    -- Pride and Prejudice: only copy out on loan L15; 1st in the queue
+('RES12', 'M12', 'B12', '2026-10-12', 'Pending'),    -- Hamlet: 2nd in the queue, after RES09
+('RES13', 'M11', 'B13', '2026-10-18', 'Pending'),    -- Pride and Prejudice: 2nd in the queue, after RES11
+('RES14', 'M05', 'B06', CURRENT_DATE - INTERVAL 4 DAY, 'Pending'),    -- Mathematical Methods: C01 damaged, C02 out on loan L06; 1st in the queue
+('RES15', 'M04', 'B06', CURRENT_DATE - INTERVAL 1 DAY, 'Pending');   -- Mathematical Methods: 2nd in the queue, after RES14
 
--- Loan_Detail (23 rows)
+-- Loan_Detail (20 rows)
 -- The fine of a line is not stored: the view Loan_Detail_Fine computes it
 -- (5,000 VND per day late). Payment_Status says whether that fine is
 -- Unpaid, Paid or Waived, and is 'None' for a copy returned on time.
--- Copies still out (Return_Date NULL) were already overdue when this data was
--- entered, so they are marked 'Unpaid'; L15 was not due yet, so it is 'None'.
 -- Copies still out (Return_Date NULL): lines already past their due date
 -- (L03, L11, L15) are 'Unpaid'; lines not yet due (L06, L09, L18, L19,
 -- dates relative to CURRENT_DATE) are 'None'.
@@ -687,18 +682,15 @@ INSERT INTO Loan_Detail (Loan_ID, Detail_ID, Book_ID, Copy_ID, Return_Date, Rene
 ('L03', 'D02', 'B03', 'C02', NULL,         0, 'Unpaid'),
 ('L04', 'D01', 'B04', 'C01', '2026-04-02', 0, 'Unpaid'),   -- 8 days late: 40,000 VND
 ('L05', 'D01', 'B05', 'C01', '2026-04-30', 0, 'Unpaid'),   -- 8 days late: 40,000 VND
-('L06', 'D01', 'B06', 'C02', NULL,         0, 'Unpaid'),
 ('L06', 'D01', 'B06', 'C02', NULL,         0, 'None'),
 ('L07', 'D01', 'B07', 'C01', '2026-06-03', 0, 'None'),
 ('L08', 'D01', 'B08', 'C01', '2026-07-13', 0, 'Unpaid'),   -- 10 days late: 50,000 VND
-('L09', 'D01', 'B09', 'C02', NULL,         0, 'Unpaid'),
 ('L09', 'D01', 'B09', 'C02', NULL,         0, 'None'),
 ('L10', 'D01', 'B10', 'C01', '2026-07-30', 0, 'Paid'),     -- 5 days late: 25,000 VND
 ('L11', 'D01', 'B12', 'C01', NULL,         0, 'Unpaid'),
 ('L12', 'D01', 'B01', 'C01', '2026-09-10', 1, 'None'),     -- renewed once, returned on the due date
 ('L13', 'D01', 'B02', 'C01', '2026-09-06', 0, 'Waived'),   -- 5 days late: 25,000 VND, waived
 ('L14', 'D01', 'B03', 'C01', '2026-09-04', 0, 'None'),
-('L15', 'D01', 'B13', 'C01', NULL,         0, 'None'),
 ('L15', 'D01', 'B13', 'C01', NULL,         0, 'Unpaid'),
 ('L18', 'D01', 'B10', 'C01', NULL,         0, 'None'),   -- not overdue
 ('L19', 'D01', 'B11', 'C01', NULL,         0, 'None');   -- not overdue
@@ -749,14 +741,14 @@ BEGIN
         END IF;
 
         SELECT COUNT(*) -- count books not return 
-        INTO v_active_loans -- số cuốn sách đang giữ chưa trả
+        INTO v_active_loans 
         FROM Loan_Transaction lt
         INNER JOIN Loan_Detail ld
             ON lt.Loan_ID = ld.Loan_ID
         WHERE lt.Member_ID = NEW.Member_ID
           AND ld.Return_Date IS NULL; -- number of book that is not return 
 
-        IF (v_active_loans + 1) > v_limit THEN -- chặn việc mượn quá sách
+        IF (v_active_loans + 1) > v_limit THEN 
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'BR03 Violation: Borrowing limit exceeded for this membership category.';
         END IF;
@@ -800,7 +792,7 @@ BEGIN
     -- BR05: returned after the due date, so a fine must be recorded
     -- (Unpaid, Paid or Waived); returned on time, so no fine (None).
     -- The amount itself is computed by the view Loan_Detail_Fine.
-    IF NEW.Return_Date IS NOT NULL AND NEW.Return_Date > v_due AND NEW.Payment_Status = 'None' THEN -- trả trễ mà không ghi nhận phạt
+    IF NEW.Return_Date IS NOT NULL AND NEW.Return_Date > v_due AND NEW.Payment_Status = 'None' THEN 
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'BR05 Violation: A copy returned after its due date must carry a fine (Unpaid, Paid or Waived).';
     END IF;

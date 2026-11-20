@@ -128,6 +128,27 @@ public class BookCopyDAO {
         }
     }
 
+    public List<BookCopy> getAllCopies() {
+        String query = "SELECT * FROM Book_Copy";
+        List<BookCopy> copies = new ArrayList<>();
+        try (
+                Connection conn = dbconnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(query);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                BookCopy copy = new BookCopy(
+                        rs.getString("Book_ID"),
+                        rs.getString("Copy_ID"),
+                        rs.getString("Shelf_Location"),
+                        rs.getString("Status"),
+                        rs.getString("Condition_Notes"));
+                copies.add(copy);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return copies;
+    }
     //AI generated
     public String CopyDeleteChecker(String bookId, String copyId) {
     

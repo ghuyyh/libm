@@ -399,11 +399,7 @@ SELECT ld.Loan_ID,
        ld.Return_Date,
        GREATEST(DATEDIFF(COALESCE(ld.Return_Date, CURRENT_DATE), lt.Due_Date), 0) AS Days_Late,
        GREATEST(DATEDIFF(COALESCE(ld.Return_Date, CURRENT_DATE), lt.Due_Date), 0) * 5000.00 AS Fine_Amount,
-       ld.Payment_Status,       CASE
-           WHEN ld.Return_Date IS NOT NULL THEN 'Returned'
-           WHEN lt.Due_Date < CURRENT_DATE THEN 'Overdue'
-           ELSE 'Not overdue'
-       END AS Loan_Status
+       ld.Payment_Status
 FROM Loan_Detail ld
 INNER JOIN Loan_Transaction lt
     ON lt.Loan_ID = ld.Loan_ID;

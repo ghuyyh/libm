@@ -166,7 +166,7 @@
                   </AnchorPane>
                </content>
             </Tab>
-            <Tab text="Add New Title">
+            <Tab text="Add New Title &amp; Publisher">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -224,6 +224,7 @@
                           </columns>
                         </TableView>
                         <Label layoutX="300.0" layoutY="149.0" text="All publisher here" />
+                        <Button layoutX="973.0" layoutY="145.0" mnemonicParsing="false" onAction="#deletePublisher" text="Delete Publisher" />
                      </children>
                   </AnchorPane>
               </content>

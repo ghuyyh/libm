@@ -9,7 +9,7 @@
 --    - Không gọi `Total_Copies_Borrowed` trên `Loan_Transaction` -> dùng View `Loan_Summary`.
 --    - Không gọi `Fine_Amount` hay `Days_Late` trên `Loan_Detail` -> dùng View `Loan_Detail_Fine`.
 -- 2. Xử lý `Category_ID` trên bảng `Book`:
---    - Cột `Category_ID` vẫn giữ trong DB với giá trị mặc định `DEFAULT 'CAT01'`.
+--    - Cột `Category_ID` vẫn giữ trong DB với giá trị mặc định `DEFAULT 'CAT00'` (Uncategorized).
 --    - Phần 1 (D5) vẫn giữ Query 7 thống kê theo `Category`; Phần 2 (UI) đã ẩn `Category`
 --      để bên Java không cần hiển thị hoặc truyền `Category_ID` khi thêm/sửa sách.
 -- 3. Quy tắc Trigger 3 (Trả sách):
@@ -42,11 +42,14 @@ WHERE lt.Member_ID = 'M01'
   AND lt.Due_Date < CURRENT_DATE;
 
 -- Query 3 (Topic Q3 - Aggregation & Ranking): Find the ten most borrowed book titles in the current year.
+-- The year is written as a date range (not YEAR(Borrow_Date) = ...) so that index
+-- idx_loantransaction_borrow_date can be used: wrapping the column in a function prevents index use.
 SELECT b.Book_ID, b.Title, COUNT(ld.Detail_ID) AS Borrow_Count
 FROM Book b
 JOIN Loan_Detail ld ON b.Book_ID = ld.Book_ID
 JOIN Loan_Transaction lt ON ld.Loan_ID = lt.Loan_ID
-WHERE YEAR(lt.Borrow_Date) = YEAR(CURRENT_DATE)
+WHERE lt.Borrow_Date >= MAKEDATE(YEAR(CURRENT_DATE), 1)
+  AND lt.Borrow_Date <  MAKEDATE(YEAR(CURRENT_DATE) + 1, 1)
 GROUP BY b.Book_ID, b.Title
 ORDER BY Borrow_Count DESC
 LIMIT 10;
@@ -180,7 +183,7 @@ FROM Book_Copy
 WHERE Book_ID = ?
 ORDER BY Copy_ID ASC;
 
--- B3. Insert / Update / Delete Book Title (MySQL automatically assigns Category_ID = DEFAULT 'CAT01')
+-- B3. Insert / Update / Delete Book Title (MySQL automatically assigns Category_ID = DEFAULT 'CAT00' - Uncategorized)
 INSERT INTO Book (Book_ID, Publisher_ID, ISBN, Title, Publication_Year) VALUES (?, ?, ?, ?, ?);
 UPDATE Book SET Publisher_ID = ?, ISBN = ?, Title = ?, Publication_Year = ? WHERE Book_ID = ?;
 DELETE FROM Book WHERE Book_ID = ?;
@@ -393,7 +396,10 @@ ORDER BY Copy_ID ASC
 LIMIT 1
 FOR UPDATE;
 
--- Step 2: Temporarily set copy to 'Available' so Trigger 2 allows inserting into `Loan_Detail`
+-- Step 2 (optional, kept in sync with ReservationDAO.fulfillReser): release the copy from 'Reserved'
+-- before lending it. Not required by Trigger 2, which already accepts a copy whose status is
+-- 'Available' OR 'Reserved'; the row lock taken in Step 1 (FOR UPDATE) is what prevents another
+-- transaction from taking this copy between Step 2 and Step 4.
 UPDATE Book_Copy
 SET Status = 'Available'
 WHERE Book_ID = ?
@@ -434,7 +440,7 @@ FROM Loan_Detail_Fine ldf
 JOIN Member m ON ldf.Member_ID = m.Member_ID
 JOIN Book b ON ldf.Book_ID = b.Book_ID
 WHERE ldf.Fine_Amount > 0
-ORDER BY ldf.Payment_Status DESC, ldf.Due_Date ASC;
+ORDER BY FIELD(ldf.Payment_Status, 'Unpaid', 'Paid', 'Waived'), ldf.Due_Date ASC;  -- Unpaid first (DESC would give Waived, Unpaid, Paid)
 
 -- F2. Update fine payment status ('Paid' or 'Waived')
 UPDATE Loan_Detail
@@ -446,6 +452,9 @@ WHERE Loan_ID = ? AND Detail_ID = ?;
 -- SCREEN 7: SearchView.fxml (Global Search - Category Filter Omitted)
 -- ============================================================================
 -- S1. Search books by Book ID, Title, ISBN, or Author Name
+-- The author condition sits in EXISTS (not `a.Author_Name LIKE ?` in WHERE): filtering the
+-- joined author rows before GROUP_CONCAT would drop the co-authors from the Authors column
+-- (searching 'Rivest' would show B01 with only 'Ronald L. Rivest' instead of all 4 authors).
 SELECT b.Book_ID, b.ISBN, b.Title, b.Publication_Year, p.Publisher_Name,
        GROUP_CONCAT(DISTINCT a.Author_Name ORDER BY ba.Author_Order SEPARATOR ', ') AS Authors,
        COUNT(DISTINCT CASE WHEN bc.Status = 'Available' THEN bc.Copy_ID END) AS Available_Copies
@@ -454,7 +463,12 @@ JOIN Publisher p ON b.Publisher_ID = p.Publisher_ID
 LEFT JOIN Book_Author ba ON b.Book_ID = ba.Book_ID
 LEFT JOIN Author a ON ba.Author_ID = a.Author_ID
 LEFT JOIN Book_Copy bc ON b.Book_ID = bc.Book_ID
-WHERE b.Book_ID LIKE ? OR b.Title LIKE ? OR b.ISBN LIKE ? OR a.Author_Name LIKE ?
+WHERE b.Book_ID LIKE ? OR b.Title LIKE ? OR b.ISBN LIKE ?
+   OR EXISTS (SELECT 1
+              FROM Book_Author ba2
+              JOIN Author a2 ON ba2.Author_ID = a2.Author_ID
+              WHERE ba2.Book_ID = b.Book_ID
+                AND a2.Author_Name LIKE ?)
 GROUP BY b.Book_ID, b.ISBN, b.Title, b.Publication_Year, p.Publisher_Name
 ORDER BY b.Title ASC;
 
@@ -495,7 +509,8 @@ SELECT b.Book_ID, b.Title, COUNT(ld.Detail_ID) AS Total_Borrows
 FROM Book b
 JOIN Loan_Detail ld ON b.Book_ID = ld.Book_ID
 JOIN Loan_Transaction lt ON ld.Loan_ID = lt.Loan_ID
-WHERE YEAR(lt.Borrow_Date) = YEAR(CURRENT_DATE)
+WHERE lt.Borrow_Date >= MAKEDATE(YEAR(CURRENT_DATE), 1)       -- date range: uses idx_loantransaction_borrow_date
+  AND lt.Borrow_Date <  MAKEDATE(YEAR(CURRENT_DATE) + 1, 1)
 GROUP BY b.Book_ID, b.Title
 ORDER BY Total_Borrows DESC
 LIMIT 10;
@@ -533,7 +548,8 @@ SELECT MONTH(lt.Borrow_Date) AS Borrow_Month,
        COUNT(ld.Detail_ID) AS Total_Copies_Borrowed
 FROM Loan_Transaction lt
 LEFT JOIN Loan_Detail ld ON lt.Loan_ID = ld.Loan_ID
-WHERE YEAR(lt.Borrow_Date) = YEAR(CURRENT_DATE)
+WHERE lt.Borrow_Date >= MAKEDATE(YEAR(CURRENT_DATE), 1)       -- date range: uses idx_loantransaction_borrow_date
+  AND lt.Borrow_Date <  MAKEDATE(YEAR(CURRENT_DATE) + 1, 1)
 GROUP BY MONTH(lt.Borrow_Date)
 ORDER BY Borrow_Month ASC;
 

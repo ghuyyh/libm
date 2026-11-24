@@ -134,10 +134,3 @@ once, when the loan header is created and before any copy is added, so it can
 only refuse a new loan to a member who already holds the maximum. Trigger 2 runs
 for every copy added, so the limit holds however many copies a loan has and
 whether they are added to a new or an existing loan.
-
-<<<<<<< HEAD
-=======
-
-| **T2: Cancelled return and fine payment** | `ROLLBACK` | 1) Record the return of `L03-D01`.<br>2) Set `Payment_Status = 'Paid'`.<br>3) Change copy `B02-C02` back to `Available`.<br>4) The payment gateway reports an error, so `ROLLBACK`. | `Loan_Detail`, `Book_Copy` | Demonstrates atomicity: when the payment fails, the book return record, the fine status, and the copy status are all rolled back. |
-| **Cleanup** | `COMMIT` | Delete loan slip `L17` (its loan lines are deleted via `CASCADE`) and set `B14-C01` back to `Available`. | `Loan_Transaction`, `Book_Copy` | Restores the sample data to its original state after running T1. |
->>>>>>> 641acb89bab2e8b7794b5e5c9233f438b72a56d1
